@@ -4,7 +4,8 @@ A modern FastAPI-based application for managing and orchestrating AI agents usin
 
 ## 🚀 Overview
 
-Canvas is a powerful platform that leverages CrewAI to create, manage, and orchestrate AI agents. It provides a robust API interface for interacting with AI agents and managing their workflows.
+Canvas is a powerful platform that leverages CrewAI to create, manage, and orchestrate AI agents. It provides a robust
+API interface for interacting with AI agents and managing their workflows.
 
 ## 📋 Features
 
@@ -21,6 +22,7 @@ Canvas is a powerful platform that leverages CrewAI to create, manage, and orche
 > **Note**: This project is currently under active development. Features and documentation are being added regularly.
 
 ### Current Development Focus
+
 - Core API structure
 - Basic agent management
 - Database integration
@@ -53,18 +55,21 @@ canvas/
 ## 🚀 Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/CrewsBoard/canvas.git
 cd canvas
 ```
 
 2. Create and activate a virtual environment:
+
 ```bash
 uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 3. Install dependencies:
+
 ```bash
 uv pip install -e .
 ```
@@ -72,32 +77,38 @@ uv pip install -e .
 ## 🏃 Running the Application
 
 Start the development server:
+
 ```bash
 export PYTHONPATH="$PYTHONPATH:$(pwd)" && gunicorn -w 4 -k uvicorn.workers.UvicornWorker core.main:create_app # or python -m core.main
 ```
 
 The API will be available at:
-- API Documentation: http://localhost:8000/docs
-- ReDoc Documentation: http://localhost:8000/redoc
+
+- API Documentation: http://localhost:8001/docs
+- ReDoc Documentation: http://localhost:8001/redoc
 
 ## 🧪 Development
 
 ### Code Formatting
+
 ```bash
 black .
 ```
 
 ### Linting
+
 ```bash
 ruff check .
 ```
 
 ### Type Checking
+
 ```bash
 mypy .
 ```
 
 ### Running Tests
+
 ```bash
 pytest
 ```
@@ -123,6 +134,7 @@ This project is licensed under the terms of the LICENSE file in the root of this
 ## 📅 Changelog
 
 ### [Unreleased]
+
 - Initial project setup
 - Basic FastAPI application structure
 - Database integration with SQLModel
