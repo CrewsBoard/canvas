@@ -4,26 +4,24 @@ import re
 
 def get_root_path() -> str:
     """
-    Get the root path of the project.
+    Get the root path of the project based on the given module name.
 
     Returns:
         str: The root path of the project.
     """
-    current_file_path = os.path.abspath(__file__).split("src")
+    current_file_path = os.path.abspath(__file__).split(get_project_name())
     current_file_path = current_file_path[:-1][0]
-    return current_file_path
+    return os.path.join(current_file_path, get_project_name())
 
 
 def get_project_name() -> str:
     """
-    Get the project name.
+    Get the project name based on the root path of the given module.
 
     Returns:
-        str: The project name.
+        str: The name of the project.
     """
-    root_path = get_root_path()
-    project_name = root_path.split("/")[-2]
-    return project_name
+    return "canvas"
 
 
 def make_snake_case(string: str) -> str:

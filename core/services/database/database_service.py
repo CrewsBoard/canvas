@@ -11,7 +11,7 @@ from sqlmodel import SQLModel
 from core.services.core import settings
 from core.services.database.abstract_database_service import AbstractDatabaseService
 from shared.utils import logger
-from shared.utils.funcs import get_root_path, get_project_name
+from shared.utils.funcs import get_root_path
 
 
 class DatabaseService(AbstractDatabaseService):
@@ -60,7 +60,6 @@ class DatabaseService(AbstractDatabaseService):
         logger.info(f"Creating database schema for {settings.database.schema_package}")
         try:
             schema_package = settings.database.schema_package
-            schema_package = schema_package.replace(f"{get_project_name()}.", "")
             schema_package_split = os.sep.join(schema_package.split("."))
             schema_package_path = os.path.join(get_root_path(), schema_package_split)
             if not os.path.exists(schema_package_path):

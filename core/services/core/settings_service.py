@@ -5,6 +5,7 @@ import yaml
 from pydantic_settings import BaseSettings
 
 from core.dtos.settings import SettingsDto
+from shared.utils.funcs import get_project_name
 
 
 class SettingsService(BaseSettings, SettingsDto):
@@ -26,10 +27,11 @@ class SettingsService(BaseSettings, SettingsDto):
 
     @classmethod
     def yaml_config_source(cls):
+        project_name = get_project_name()
         settings_type: str = os.environ.get("ENVIRONMENT", "dev")
-        current_file_path = os.path.abspath(__file__).split("src")
+        current_file_path = os.path.abspath(__file__).split(project_name)
         current_file_path = current_file_path[:-1][0]
-        settings_dir = os.path.join(current_file_path, "src", "core", "configs")
+        settings_dir = os.path.join(current_file_path, project_name, "core", "configs")
         settings_path = os.path.join(settings_dir, f"{settings_type}.yaml")
         config_path = Path(settings_path)
         if config_path.exists():
