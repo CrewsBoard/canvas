@@ -17,15 +17,18 @@ class RelationDao(BaseDao[RelationDto, RelationSchema], Generic[T]):
         self.dto = RelationDto
         self.schema = RelationSchema
 
-    async def related_entities(self, entity: Entity, direction: RelationDirection, entity_class: Type[T]) -> List[T]:
-        data = await self.relation_repository.related_entities(entity, direction, entity_class.entity_type)
-        entity_list: list[T] = []
+    async def related_entities(
+        self, entity: Entity, direction: RelationDirection, entity_class: Type[T]
+    ) -> List[T]:
+        data = await self.relation_repository.related_entities(
+            entity, direction, entity_class.entity_type
+        )
+        entity_list: List[T] = []
         for item in data:
-            match direction:
-                case RelationDirection.FROM:
-                    entity_list.append(entity_class(item.to_entity_id))
-                case RelationDirection.TO:
-                    entity_list.append(entity_class(item.from_entity_id))
-                case _:
-                    raise ValueError("Invalid relation direction")
+            if direction == RelationDirection.FROM:
+                entity_list.append(entity_class(item.to_entity_id))
+            elif direction == RelationDirection.TO:
+                entity_list.append(entity_class(item.from_entity_id))
+            else:
+                raise ValueError("Invalid relation direction")
         return entity_list
