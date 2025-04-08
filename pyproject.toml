@@ -1,9 +1,14 @@
 [project]
 name = "canvas"
 version = "0.1.0"
-description = "Add your description here"
+description = "A modern FastAPI-based application for managing and orchestrating AI agents using CrewAI"
 readme = "README.md"
 requires-python = ">=3.10.11"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Rafsun Jany Arman", email = "armanrafsunjany@gmail.com" }
+]
+
 dependencies = [
     "crewai>=0.108.0",
     "fastapi>=0.115.9",
@@ -12,3 +17,36 @@ dependencies = [
     "sqlmodel>=0.0.24",
     "uvicorn[standard]>=0.34.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.0.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "mypy>=1.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/CrewsBoard/canvas"
+Repository = "https://github.com/CrewsBoard/canvas.git"
+Documentation = "https://github.com/CrewsBoard/canvas#readme"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["core/tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.hatch.build.targets.wheel]
+packages = ["core"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
