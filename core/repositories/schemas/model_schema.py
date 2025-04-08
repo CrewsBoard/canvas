@@ -8,7 +8,7 @@ from core.repositories.schemas.base_schema import BaseSchema
 
 
 class ModelSchema(BaseSchema, table=True):
-    __tablename__ = 'models'
+    __tablename__ = "models"
 
     name: str = Field(nullable=False)
     provider: str = Field(nullable=False)
@@ -17,6 +17,11 @@ class ModelSchema(BaseSchema, table=True):
     description: Optional[str] = Field(nullable=True)
     api_key: Optional[str] = Field(nullable=True)
 
-    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )
     updated_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()))
+        sa_column=Column(
+            DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        )
+    )

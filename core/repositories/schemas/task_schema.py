@@ -7,7 +7,7 @@ from core.repositories.schemas.base_schema import BaseSchema
 
 
 class TaskSchema(BaseSchema, table=True):
-    __tablename__ = 'tasks'
+    __tablename__ = "tasks"
 
     name: str = Field(nullable=False)
     context: str = Field(nullable=True)
@@ -15,6 +15,11 @@ class TaskSchema(BaseSchema, table=True):
     human_input: bool = Field(nullable=True)
     priority: str = Field(nullable=True)
 
-    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )
     updated_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()))
+        sa_column=Column(
+            DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        )
+    )

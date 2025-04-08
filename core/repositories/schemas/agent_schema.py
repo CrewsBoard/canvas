@@ -9,7 +9,7 @@ from core.repositories.schemas.base_schema import BaseSchema
 
 
 class AgentSchema(BaseSchema, table=True):
-    __tablename__ = 'agents'
+    __tablename__ = "agents"
 
     name: str = Field(nullable=False)
     llm_id: Optional[UUID4] = Field(nullable=True)
@@ -27,6 +27,11 @@ class AgentSchema(BaseSchema, table=True):
     code_execution_mode: str = Field(nullable=True)
     max_execution_time: Optional[int] = Field(nullable=True)
 
-    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )
     updated_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()))
+        sa_column=Column(
+            DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        )
+    )

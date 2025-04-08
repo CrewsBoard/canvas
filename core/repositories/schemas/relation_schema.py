@@ -6,7 +6,7 @@ from core.dtos.entity import EntityType
 
 
 class RelationSchema(SQLModel, table=True):
-    __tablename__ = 'relations'
+    __tablename__ = "relations"
 
     from_entity_id: UUID4 = Field(nullable=False)
     to_entity_id: UUID4 = Field(nullable=False)
@@ -14,5 +14,7 @@ class RelationSchema(SQLModel, table=True):
     to_entity_type: EntityType = Field(nullable=False)
 
     __table_args__ = (
-        PrimaryKeyConstraint('from_entity_id', 'from_entity_type', 'to_entity_id', 'to_entity_type'),
+        PrimaryKeyConstraint(
+            "from_entity_id", "from_entity_type", "to_entity_id", "to_entity_type"
+        ),
     )
