@@ -1,0 +1,14 @@
+[project]
+name = "canvas"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10.11"
+dependencies = [
+    "crewai>=0.108.0",
+    "fastapi>=0.115.9",
+    "gunicorn>=23.0.0",
+    "pydantic-settings>=2.8.1",
+    "sqlmodel>=0.0.24",
+    "uvicorn[standard]>=0.34.0",
+]

@@ -1,0 +1,8 @@
+server:
+  name: "Prod Server"
+  debug: False
+
+database:
+  type: "postgresql"
+  url: "postgresql+asyncpg://postgres:postgres@localhost:5432/canvas"
+  schema_package: "core.repositories.schemas"
