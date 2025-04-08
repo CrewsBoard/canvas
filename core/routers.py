@@ -1,7 +1,7 @@
 from fastapi.routing import APIRouter
 
 from core.controllers import AgentController, PromptController, TaskController, ModelController, \
-    RelationController, CrewController, StreamTestController
+    RelationController, CrewController
 
 routes: list[APIRouter] = [
     AgentController().router,
@@ -10,5 +10,4 @@ routes: list[APIRouter] = [
     ModelController().router,
     RelationController().router,
     CrewController().router,
-    StreamTestController().router
 ]
