@@ -1,0 +1,66 @@
+name: 💡 Feature Request
+description: Suggest a new feature or enhancement for Canvas
+labels: [ feature, enhancement, 'status: needs triage' ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you for suggesting a feature for Canvas!
+
+        **Before submitting a feature request, please consider:**
+
+        * **Check existing issues:** Ensure your suggestion hasn't already been submitted.
+        * **Be clear and concise:** Provide a detailed description of your proposed feature or enhancement.
+        * **Explain the benefits:** Describe how your idea would benefit users of Canvas.
+        * **Provide examples (if applicable):** Include screenshots, code snippets, or other relevant examples to illustrate your point.
+
+  - type: checkboxes
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have searched for similar feature requests in the [issue tracker](https://github.com/CrewsBoard/canvas/issues).
+          required: true
+        - label: I have reviewed the documentation for relevant information.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Feature Description
+      description: Provide a clear and detailed description of your proposed feature or enhancement.
+      placeholder: I would like Canvas to support...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Use Case
+      description: Describe the specific use case or scenario where this feature would be valuable.
+      placeholder: This feature would be useful when...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Proposed Solution
+      description: If you have ideas about how to implement this feature, please share them.
+      placeholder: One approach could be to...
+
+  - type: textarea
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: I've tried to accomplish this by...
+
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or examples that would help explain your feature request.
+      placeholder: Here are some examples of similar implementations...
+
+  - type: checkboxes
+    attributes:
+      label: Self-service
+      description: |
+        If you feel like you could contribute to this feature, please check the box below.
+      options:
+        - label: I'd be willing to implement this feature myself.

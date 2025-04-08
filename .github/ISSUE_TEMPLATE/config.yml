@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/CrewsBoard/canvas/discussions
+    about: For general questions, ideas, or community discussions about Canvas
+  - name: 📝 Usage Examples
+    url: https://github.com/CrewsBoard/canvas/tree/main/examples
+    about: Check our examples directory for common usage scenarios and integrations
+  - name: 📚 Documentation
+    url: https://github.com/CrewsBoard/canvas#readme
+    about: Read the project documentation for answers to common questions
+  - name: 🚀 Feature Request
+    url: https://github.com/CrewsBoard/canvas/issues/new?template=feature.yml
+    about: Suggest new features or enhancements for Canvas

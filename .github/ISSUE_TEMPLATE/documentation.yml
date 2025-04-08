@@ -1,0 +1,70 @@
+name: 📚 Documentation Issue
+description: Report issues or suggest improvements to Canvas documentation
+labels: [ documentation, 'status: needs triage' ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Documentation Issue or Suggestion
+        
+        Thanks for helping us improve the Canvas documentation! Clear and comprehensive documentation makes a huge difference for all users.
+
+  - type: checkboxes
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have searched for similar documentation issues in the [issue tracker](https://github.com/CrewsBoard/canvas/issues).
+          required: true
+        - label: I have verified this is specifically a documentation issue, not a feature request or bug report.
+          required: true
+
+  - type: dropdown
+    attributes:
+      label: Documentation Issue Type
+      description: What type of documentation issue are you reporting?
+      options:
+        - Missing documentation
+        - Incorrect documentation
+        - Unclear documentation
+        - Outdated documentation
+        - Documentation formatting/presentation
+        - Code examples need improvement
+        - Other (please explain below)
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Documentation Location
+      description: Which document, page, or section has the issue?
+      placeholder: "README.md, API documentation, or specific URL"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Issue Description
+      description: Please describe the issue with the documentation in detail.
+      placeholder: "The documentation for the transcribe function is missing information about..."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Suggested Changes
+      description: If you have specific suggestions for improving the documentation, please share them.
+      placeholder: "I suggest adding the following details..."
+
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: Add any other context or screenshots about the documentation issue here.
+      placeholder: "Screenshots, references to similar documentation elsewhere, etc."
+
+  - type: checkboxes
+    attributes:
+      label: Self-service
+      description: |
+        If you feel like you could contribute to fixing this documentation issue, please check the box below.
+      options:
+        - label: I'd be willing to submit a PR to address this documentation issue myself.

@@ -1,0 +1,100 @@
+name: 🐛 Bug Report
+description: Submit a bug report for Canvas
+labels: [ bug, 'status: needs triage' ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Please help us help you!
+
+        Before filing your issue, please consider:
+        - Is this clearly a Canvas defect?
+        - Do you have basic information about where it goes wrong?
+        - Could it be due to your own configuration or environment?
+
+        The quickest way to verify whether it's a Canvas defect is through a **minimal reproduction** demonstrating the issue.
+
+        Bugs are fixed faster if you include:
+        - A minimal reproduction code sample
+        - Clear steps to reproduce the issue
+        - Version information about your environment
+        - Full error logs or stack traces
+
+  - type: checkboxes
+    attributes:
+      label: Prerequisites
+      description: Please check the following items before creating an issue.
+      options:
+        - label: I'm using the latest version of Canvas.
+          required: true
+        - label: I have verified this issue is not already reported.
+          required: true
+        - label: I have tried with a clean environment (fresh venv/install).
+        - label: I have read the console error messages carefully (if applicable).
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: Write down the steps to reproduce the bug.
+      placeholder: |
+        1. Set up environment with...
+        2. Configure Canvas with...
+        3. Try to transcribe audio file...
+        4. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: How did you expect Canvas to behave?
+      placeholder: Describe what should have happened.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Actual behavior
+      description: |
+        What actually happened? Include full error messages, logs, and stack traces if available.
+      placeholder: Describe what happened instead. Include error messages and screenshots if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Reproduction code
+      description: If applicable, add a minimal code example that reproduces the issue.
+      render: python
+      placeholder: |
+        import voice_transcribe
+
+        # Example code that triggers the issue
+
+  - type: textarea
+    attributes:
+      label: Your environment
+      description: Include details about your environment.
+      value: |
+        - Canvas version:
+        - Python version:
+        - Operating system and version:
+        - Voice model/implementation used:
+        - Hardware specs (if relevant):
+        - Virtual environment tool (venv/conda/etc.):
+
+  - type: checkboxes
+    attributes:
+      label: Self-service
+      description: |
+        If you feel like you could contribute to this issue, please check the box below.
+        If you check this box, please submit a pull request within 7 days.
+      options:
+        - label: I'd be willing to fix this bug myself.
