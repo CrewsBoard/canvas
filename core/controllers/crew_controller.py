@@ -21,10 +21,7 @@ class CrewController(BaseController):
 
     async def kickoff_crew(self, crew_id: UUID4) -> dict:
         crew_response = await self.crew_service.kickoff_crew(CrewEntity(crew_id))
-        return {
-            "message": crew_response.raw,
-            "crew": crew_id
-        }
+        return {"message": crew_response.raw, "crew": crew_id}
 
     async def read_all(self) -> list[CrewDto]:
         return await self.crew_service.read_all()

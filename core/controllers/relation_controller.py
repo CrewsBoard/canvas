@@ -13,8 +13,12 @@ class RelationController(BaseController):
         self.router.add_api_route("/relations", self.read_all, methods=["GET"])
         self.router.add_api_route("/relation/{relation_id}", self.get, methods=["GET"])
         self.router.add_api_route("/relation", self.create, methods=["POST"])
-        self.router.add_api_route("/relation/{relation_id}", self.update, methods=["PUT"])
-        self.router.add_api_route("/relation/{relation_id}", self.delete, methods=["DELETE"])
+        self.router.add_api_route(
+            "/relation/{relation_id}", self.update, methods=["PUT"]
+        )
+        self.router.add_api_route(
+            "/relation/{relation_id}", self.delete, methods=["DELETE"]
+        )
 
     async def read_all(self) -> list[RelationDto]:
         return await self.relation_service.read_all()

@@ -23,15 +23,19 @@ class BaseController:
         self.relation_service: RelationService = RelationService()
 
         self.task_swagger_tags = ["Task"]
-        self.task_service: TaskService = TaskService(AgentService(
-            RelationService(), ModelService(), PromptService()
-        ), RelationService(), PromptService())
+        self.task_service: TaskService = TaskService(
+            AgentService(RelationService(), ModelService(), PromptService()),
+            RelationService(),
+            PromptService(),
+        )
 
         self.crew_swagger_tags = ["Crew"]
-        self.crew_service: CrewService = CrewService(AgentService(
-            RelationService(), ModelService(), PromptService()
-        ),
-            TaskService(AgentService(
-                RelationService(), ModelService(), PromptService()
-            ), RelationService(), PromptService()),
-            RelationService())
+        self.crew_service: CrewService = CrewService(
+            AgentService(RelationService(), ModelService(), PromptService()),
+            TaskService(
+                AgentService(RelationService(), ModelService(), PromptService()),
+                RelationService(),
+                PromptService(),
+            ),
+            RelationService(),
+        )

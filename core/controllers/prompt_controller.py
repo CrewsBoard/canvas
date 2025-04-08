@@ -14,7 +14,9 @@ class PromptController(BaseController):
         self.router.add_api_route("/prompt/{prompt_id}", self.get, methods=["GET"])
         self.router.add_api_route("/prompt", self.create, methods=["POST"])
         self.router.add_api_route("/prompt/{prompt_id}", self.update, methods=["PUT"])
-        self.router.add_api_route("/prompt/{prompt_id}", self.delete, methods=["DELETE"])
+        self.router.add_api_route(
+            "/prompt/{prompt_id}", self.delete, methods=["DELETE"]
+        )
 
     async def read_all(self) -> list[PromptDto]:
         return await self.prompt_service.read_all()
