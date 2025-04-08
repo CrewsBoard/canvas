@@ -31,10 +31,10 @@ class TaskService(BaseService[TaskDto, Task]):
 
     async def build(self, entity: TaskEntity):
         task_entity: TaskDto = await self.read(entity.id)
-        agent_entities: List[
-            AgentEntity
-        ] = await self.relation_service.get_related_entities(
-            entity, RelationDirection.FROM, AgentEntity
+        agent_entities: List[AgentEntity] = (
+            await self.relation_service.get_related_entities(
+                entity, RelationDirection.FROM, AgentEntity
+            )
         )
         agent = (
             await self.agent_service.build(agent_entities[0])
