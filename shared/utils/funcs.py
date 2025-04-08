@@ -9,7 +9,7 @@ def get_root_path() -> str:
     Returns:
         str: The root path of the project.
     """
-    current_file_path = os.path.abspath(__file__).split('src')
+    current_file_path = os.path.abspath(__file__).split("src")
     current_file_path = current_file_path[:-1][0]
     return current_file_path
 
@@ -22,7 +22,7 @@ def get_project_name() -> str:
         str: The project name.
     """
     root_path = get_root_path()
-    project_name = root_path.split('/')[-2]
+    project_name = root_path.split("/")[-2]
     return project_name
 
 
@@ -36,4 +36,4 @@ def make_snake_case(string: str) -> str:
     Returns:
         str: The converted string in snake_case.
     """
-    return re.sub(r'([a-z])([A-Z])', r'\1_\2', string).lower()
+    return re.sub(r"([a-z])([A-Z])", r"\1_\2", string).lower()

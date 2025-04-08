@@ -18,15 +18,21 @@ class Logger(logging.Logger):
         self.addHandler(console_handler)
 
 
-def log_execution(start_msg: str = "", end_msg: str = "") -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def log_execution(
+    start_msg: str = "", end_msg: str = ""
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             args_str = ", ".join(repr(arg) for arg in args)
-            kwargs_str = ", ".join(f"{key}={repr(value)}" for key, value in kwargs.items())
+            kwargs_str = ", ".join(
+                f"{key}={repr(value)}" for key, value in kwargs.items()
+            )
             all_args_str = ", ".join(filter(None, [args_str, kwargs_str]))
 
-            start_message = f"Starting execution of function: {func.__name__}({all_args_str})"
+            start_message = (
+                f"Starting execution of function: {func.__name__}({all_args_str})"
+            )
             logger.debug(start_message)
             logger.info(start_msg)
             try:
