@@ -15,6 +15,7 @@ class RelationService(BaseService[RelationDto, None], Generic[T]):
         self.relation_dao = RelationDao(RelationRepository())
         super().__init__(self.relation_dao)
 
-    async def get_related_entities(self, entity: Entity, direction: RelationDirection, entity_class: Type[T]) -> List[
-        T]:
+    async def get_related_entities(
+        self, entity: Entity, direction: RelationDirection, entity_class: Type[T]
+    ) -> List[T]:
         return await self.relation_dao.related_entities(entity, direction, entity_class)

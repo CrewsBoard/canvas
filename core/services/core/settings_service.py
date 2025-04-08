@@ -9,16 +9,27 @@ from core.dtos.settings import SettingsDto
 
 class SettingsService(BaseSettings, SettingsDto):
     @classmethod
-    def settings_customise_sources(cls, settings_cls, init_settings, env_settings, dotenv_settings,
-                                   file_secret_settings):
-        return cls.yaml_config_source(), env_settings, init_settings, file_secret_settings
+    def settings_customise_sources(
+        cls,
+        settings_cls,
+        init_settings,
+        env_settings,
+        dotenv_settings,
+        file_secret_settings,
+    ):
+        return (
+            cls.yaml_config_source(),
+            env_settings,
+            init_settings,
+            file_secret_settings,
+        )
 
     @classmethod
     def yaml_config_source(cls):
-        settings_type: str = os.environ.get('ENVIRONMENT', 'dev')
-        current_file_path = os.path.abspath(__file__).split('src')
+        settings_type: str = os.environ.get("ENVIRONMENT", "dev")
+        current_file_path = os.path.abspath(__file__).split("src")
         current_file_path = current_file_path[:-1][0]
-        settings_dir = os.path.join(current_file_path, 'src', 'core', "configs")
+        settings_dir = os.path.join(current_file_path, "src", "core", "configs")
         settings_path = os.path.join(settings_dir, f"{settings_type}.yaml")
         config_path = Path(settings_path)
         if config_path.exists():

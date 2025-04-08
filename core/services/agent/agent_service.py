@@ -18,7 +18,12 @@ from core.services.relation.relation_service import RelationService
 
 
 class AgentService(BaseService[AgentDto, Agent]):
-    def __init__(self, relation_service: RelationService, model_service: ModelService, prompt_service: PromptService):
+    def __init__(
+        self,
+        relation_service: RelationService,
+        model_service: ModelService,
+        prompt_service: PromptService,
+    ):
         self.agent_dao = AgentDao(AgentRepository())
         self.relation_service = relation_service
         self.model_service = model_service
@@ -32,17 +37,31 @@ class AgentService(BaseService[AgentDto, Agent]):
         if agent_entity_details is None:
             raise Exception(f"Agent {entity.id} not found")
         if agent_entity_details.llm_id is not None:
-            llm = await self.model_service.build(ModelEntity(agent_entity_details.llm_id))
-        prompt_entities: List[PromptEntity] = await self.relation_service.get_related_entities(entity,
-                                                                                               RelationDirection.TO,
-                                                                                               PromptEntity)
-        prompt_details: list[PromptDto] = await self.prompt_service.read_by_ids(prompt_entities)
+            llm = await self.model_service.build(
+                ModelEntity(agent_entity_details.llm_id)
+            )
+        prompt_entities: List[
+            PromptEntity
+        ] = await self.relation_service.get_related_entities(
+            entity, RelationDirection.TO, PromptEntity
+        )
+        prompt_details: list[PromptDto] = await self.prompt_service.read_by_ids(
+            prompt_entities
+        )
         if len(prompt_details) != 3:
             raise Exception("Task must have exactly 3 prompts")
         return Agent(
-            role=[prompt for prompt in prompt_details if prompt.type == PromptTypes.ROLE][0].value,
-            goal=[prompt for prompt in prompt_details if prompt.type == PromptTypes.GOAL][0].value,
-            backstory=[prompt for prompt in prompt_details if prompt.type == PromptTypes.BACKSTORY][0].value,
+            role=[
+                prompt for prompt in prompt_details if prompt.type == PromptTypes.ROLE
+            ][0].value,
+            goal=[
+                prompt for prompt in prompt_details if prompt.type == PromptTypes.GOAL
+            ][0].value,
+            backstory=[
+                prompt
+                for prompt in prompt_details
+                if prompt.type == PromptTypes.BACKSTORY
+            ][0].value,
             llm=llm,
             verbose=agent_entity_details.verbose,
         )

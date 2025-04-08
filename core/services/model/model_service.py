@@ -10,7 +10,9 @@ from core.services.core import BaseService
 
 class ModelService(BaseService[ModelDto, LLM]):
     def __init__(self):
-        self.model_dao = ModelDao(ModelRepository(), )
+        self.model_dao = ModelDao(
+            ModelRepository(),
+        )
         super().__init__(self.model_dao)
 
     @validate_call

@@ -18,7 +18,12 @@ from shared.utils import logger
 
 
 class CrewService(BaseService[CrewDto, Crew]):
-    def __init__(self, agent_service: AgentService, task_service: TaskService, relation_service: RelationService):
+    def __init__(
+        self,
+        agent_service: AgentService,
+        task_service: TaskService,
+        relation_service: RelationService,
+    ):
         self.crew_dao = CrewDao(CrewRepository())
         self.agent_service = agent_service
         self.task_service = task_service
@@ -27,18 +32,22 @@ class CrewService(BaseService[CrewDto, Crew]):
 
     async def build(self, entity: CrewEntity):
         crew_entity = await self.read(entity.id)
-        agent_entities: List[AgentEntity] = await self.relation_service.get_related_entities(entity,
-                                                                                             RelationDirection.TO,
-                                                                                             AgentEntity)
+        agent_entities: List[
+            AgentEntity
+        ] = await self.relation_service.get_related_entities(
+            entity, RelationDirection.TO, AgentEntity
+        )
         agents = await self.agent_service.build_all(agent_entities)
-        task_entities = await self.relation_service.get_related_entities(entity, RelationDirection.TO, TaskEntity)
+        task_entities = await self.relation_service.get_related_entities(
+            entity, RelationDirection.TO, TaskEntity
+        )
         tasks = await self.task_service.build_all(task_entities)
         return Crew(
             name=crew_entity.name,
             agents=agents,
             tasks=tasks,
             process=crew_entity.process,
-            verbose=True
+            verbose=True,
         )
 
     async def build_all(self, entities=list[CrewEntity]):

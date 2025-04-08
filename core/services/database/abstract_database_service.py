@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class AbstractDatabaseService(ABC):
-
     async def session(self):
         raise NotImplementedError()
 
