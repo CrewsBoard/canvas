@@ -60,20 +60,20 @@ cd canvas
 
 2. Create and activate a virtual environment:
 ```bash
-python -m venv .venv
+uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 3. Install dependencies:
 ```bash
-uv pip install -e ".[dev]"
+uv pip install -e .
 ```
 
 ## 🏃 Running the Application
 
 Start the development server:
 ```bash
-cd core && export PYTHONPATH="$PYTHONPATH:." && gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:create_app
+export PYTHONPATH="$PYTHONPATH:$(pwd)" && gunicorn -w 4 -k uvicorn.workers.UvicornWorker core.main:create_app # or python -m core.main
 ```
 
 The API will be available at:
