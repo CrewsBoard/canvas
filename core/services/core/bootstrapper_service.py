@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from core.routers import routes
-from core.services.database import database_service
+from shared.services.database import database_service
 from shared.utils import logger
 
 

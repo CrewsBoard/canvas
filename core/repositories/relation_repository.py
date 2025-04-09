@@ -1,4 +1,5 @@
 from typing import List
+
 from sqlmodel import select
 
 from core.dtos.entity import EntityType
@@ -6,7 +7,7 @@ from core.dtos.entity.entity import Entity
 from core.dtos.relation.relation_direction import RelationDirection
 from core.repositories.base_repository import BaseRepository
 from core.repositories.schemas.relation_schema import RelationSchema
-from core.services.database import database_service
+from shared.services.database import database_service
 
 
 class RelationRepository(BaseRepository[RelationSchema]):

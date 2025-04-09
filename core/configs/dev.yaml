@@ -3,6 +3,5 @@ server:
   debug: True
 
 database:
-  type: "postgresql"
   url: "postgresql+asyncpg://postgres:postgres@localhost:5432/canvas"
   schema_package: "core.repositories.schemas"
