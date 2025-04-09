@@ -39,3 +39,5 @@ class BaseController:
             ),
             RelationService(),
         )
+
+        self.flow_engine_swagger_tags = ["Flow Engine"]
