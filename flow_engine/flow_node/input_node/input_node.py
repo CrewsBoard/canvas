@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Dict, Any
 
-from flow_engine.flow_chain.services.plugin_base import FlowNode
-from flow_engine.flow_chain.services.plugin_registry import PluginRegistry
+from flow_engine.flow_chain.dtos import FlowNode
+from flow_engine.flow_chain.services import FlowNodeRegistry
 
 
-@PluginRegistry.register("input")
+@FlowNodeRegistry.register("input")
 class InputNode(FlowNode):
     def __init__(self, name: str, configuration: Dict[str, Any] = None):
         super().__init__(name, "input", configuration)

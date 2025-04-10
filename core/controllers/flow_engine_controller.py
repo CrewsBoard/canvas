@@ -1,18 +1,20 @@
+import importlib
+import os
 import uuid
 from typing import Dict, Any, List
 
 from fastapi import APIRouter, HTTPException
 
 from core.controllers.base_controller import BaseController
+from flow_engine.flow_chain.dtos import NodeConnection, NodeUiConfig
 from flow_engine.flow_chain.dtos.flow_engine import (
     FlowChainRequest,
     MessageRequest,
-    NodeTypeResponse,
     FlowChainResponse,
 )
-from flow_engine.flow_chain.models.flow_chain import NodeConnection, FlowChain
-from flow_engine.flow_chain.services.plugin_registry import PluginRegistry
-from flow_engine.flow_node.plugins.ui_configs import NODE_UI_CONFIGS
+from flow_engine.flow_chain.services import FlowNodeRegistry
+from flow_engine.flow_chain.services.flow_chain_service import FlowChainService
+from shared.utils.funcs import get_root_path
 
 
 class FlowEngineController(BaseController):
@@ -24,7 +26,7 @@ class FlowEngineController(BaseController):
             "/node-types",
             self.get_node_types,
             methods=["GET"],
-            response_model=List[NodeTypeResponse],
+            response_model=List[NodeUiConfig],
         )
         self.router.add_api_route(
             "/flow-chains",
@@ -45,32 +47,35 @@ class FlowEngineController(BaseController):
             response_model=Dict[str, Any],
         )
 
-        self.flow_chains: Dict[str, FlowChain] = {}
+        self.flow_chains: Dict[str, FlowChainService] = {}
 
     @staticmethod
-    async def get_node_types() -> List[NodeTypeResponse]:
+    async def get_node_types() -> List[NodeUiConfig]:
         node_types = []
-        for node_type, config in NODE_UI_CONFIGS.items():
-            node_types.append(
-                NodeTypeResponse(
-                    type=node_type,
-                    title=config["title"],
-                    description=config["description"],
-                    icon=config["icon"],
-                    color=config["color"],
-                    inputs=config["inputs"],
-                    outputs=config["outputs"],
-                    settings=config["settings"],
-                )
-            )
-        return node_types
+        root_path = get_root_path()
+        flow_nodes_path = os.path.join(root_path, "flow_engine", "flow_node")
+        node_ui_configs: List[NodeUiConfig] = []
+        for root, dirs, files in os.walk(flow_nodes_path):
+            if "ui_config.py" in files:
+                ui_config_path = os.path.join(root, "ui_config.py")
+                try:
+                    spec = importlib.util.spec_from_file_location(
+                        "ui_config", ui_config_path
+                    )
+                    ui_config_module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(ui_config_module)
+                    if hasattr(ui_config_module, "ui_config"):
+                        node_ui_configs.append(ui_config_module.ui_config)
+                except Exception as e:
+                    print(f"Error loading {ui_config_path}: {e}")
+        return node_ui_configs
 
     async def create_flow_chain(self, request: FlowChainRequest) -> FlowChainResponse:
         try:
             nodes = []
             node_name_to_id = {}
             for node_request in request.nodes:
-                node_class = PluginRegistry.get_plugin(node_request.type)
+                node_class = FlowNodeRegistry.get_plugin(node_request.type)
                 node = node_class(
                     name=node_request.name, configuration=node_request.configuration
                 )
@@ -87,7 +92,7 @@ class FlowEngineController(BaseController):
             ]
 
             chain_id = str(uuid.uuid4())
-            flow_chain = FlowChain(
+            flow_chain = FlowChainService(
                 id=chain_id,
                 name=request.name,
                 nodes=nodes,

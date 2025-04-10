@@ -36,14 +36,3 @@ class FlowChainResponse(BaseModel):
     name: str
     status: str
     message: str
-
-
-class NodeTypeResponse(BaseModel):
-    type: str
-    title: str
-    description: str
-    icon: str
-    color: str
-    inputs: List[str]
-    outputs: List[str]
-    settings: Dict[str, Any]

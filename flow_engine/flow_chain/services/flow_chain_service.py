@@ -1,15 +1,9 @@
-from dataclasses import dataclass
-from typing import Dict, List, Any
+from typing import Dict, Any, List
+
+from flow_engine.flow_chain.dtos import NodeConnection
 
 
-@dataclass
-class NodeConnection:
-    from_node_id: str
-    to_node_id: str
-    label: str
-
-
-class FlowChain:
+class FlowChainService:
     def __init__(
         self,
         id: str,

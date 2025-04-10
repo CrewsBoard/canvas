@@ -1,10 +1,10 @@
 from typing import Dict, Any
 
-from flow_engine.flow_chain.services.plugin_base import FlowNode
-from flow_engine.flow_chain.services.plugin_registry import PluginRegistry
+from flow_engine.flow_chain.dtos import FlowNode
+from flow_engine.flow_chain.services import FlowNodeRegistry
 
 
-@PluginRegistry.register("output")
+@FlowNodeRegistry.register("output")
 class OutputNode(FlowNode):
     def __init__(self, name: str, configuration: Dict[str, Any] = None):
         super().__init__(name, "output", configuration)
