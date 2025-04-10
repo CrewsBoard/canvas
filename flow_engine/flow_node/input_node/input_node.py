@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any
 
-from flow_engine.flow_chain.dtos import FlowNode
-from flow_engine.flow_chain.services import FlowNodeRegistry
+from flow_engine.flow_chain.services import FlowNodeRegistry, FlowNode
 
 
 @FlowNodeRegistry.register("input")

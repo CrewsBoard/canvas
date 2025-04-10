@@ -1,11 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
+from shared.services.context_manager import ContextManager
 
-class FlowNode(ABC):
+
+class FlowNode(ABC, ContextManager):
     def __init__(
         self, name: str, node_type: str, configuration: Optional[Dict[str, Any]] = None
     ):
+        super().__init__()
         self.id = str(id(self))
         self.name = name
         self.type = node_type
