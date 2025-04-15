@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -13,54 +13,32 @@ import ReactFlow, {
   BackgroundVariant,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import InputNode from './components/flow-nodes/InputNode';
-import OutputNode from './components/flow-nodes/OutputNode';
-import TransformNode from './components/flow-nodes/TransformNode';
+import { fetchNodeTypes } from './services/nodeService';
+import { NodeUIConfig } from './types/flow-node';
+import NodeBase from './components/flow-nodes/NodeBase';
 
-const nodeTypes: NodeTypes = {
-  input: InputNode,
-  output: OutputNode,
-  transform: TransformNode,
-};
-
-const initialNodes: Node[] = [
-  {
-    id: '1',
-    type: 'input',
-    position: { x: 250, y: 25 },
-    data: { 
-      label: 'Input Node',
-      input: { message: 'Hello World' }
-    },
-  },
-  {
-    id: '2',
-    type: 'transform',
-    position: { x: 250, y: 125 },
-    data: { label: 'Transform Node' },
-  },
-  {
-    id: '3',
-    type: 'output',
-    position: { x: 250, y: 225 },
-    data: { label: 'Output Node' },
-  },
-];
-
-const initialEdges: Edge[] = [
-  { id: 'e1-2', source: '1', target: '2' },
-  { id: 'e2-3', source: '2', target: '3' },
-];
-
-const nodeTemplates = [
-  { type: 'input', label: 'Input Node', description: 'Receives input data' },
-  { type: 'transform', label: 'Transform Node', description: 'Transforms data' },
-  { type: 'output', label: 'Output Node', description: 'Sends data to external systems' },
-];
+const initialEdges: Edge[] = [];
 
 function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodeTypes, setNodeTypes] = useState<NodeUIConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadNodeTypes = async () => {
+      try {
+        const types = await fetchNodeTypes();
+        setNodeTypes(types);
+      } catch (error) {
+        console.error('Error loading node types:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadNodeTypes();
+  }, []);
 
   const onConnect = useCallback(
     (params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)),
@@ -86,74 +64,63 @@ function App() {
       y: event.clientY - reactFlowBounds.top,
     };
 
+    const nodeConfig = nodeTypes.find(nt => nt.title === type);
+    if (!nodeConfig) return;
+
     const newNode: Node = {
       id: `${type}-${nodes.length + 1}`,
-      type,
+      type: 'nodeBase',
       position,
-      data: { label: `${type} Node` },
+      data: { 
+        label: type,
+        config: nodeConfig,
+        settings: {}
+      },
     };
 
     setNodes((nds) => nds.concat(newNode));
   };
 
-  // Process data through the flow
-  useEffect(() => {
-    const processData = async () => {
-      const updatedNodes = [...nodes];
-      
-      // Find input node
-      const inputNode = updatedNodes.find(node => node.type === 'input');
-      if (!inputNode) return;
-
-      // Process through the flow
-      let currentData = inputNode.data.input;
-      let currentNode = inputNode;
-
-      while (currentNode) {
-        // Find next node
-        const edge = edges.find(e => e.source === currentNode.id);
-        if (!edge) break;
-
-        const nextNode = updatedNodes.find(n => n.id === edge.target);
-        if (!nextNode) break;
-
-        // Process data based on node type
-        switch (nextNode.type) {
-          case 'transform':
-            // Example transformation
-            nextNode.data.input = currentData;
-            nextNode.data.output = {
-              ...currentData,
-              transformed: true,
-              timestamp: new Date().toISOString()
-            };
-            currentData = nextNode.data.output;
-            break;
-          case 'output':
-            nextNode.data.input = currentData;
-            nextNode.data.output = currentData;
-            break;
+  const handleNodeSettingsChange = useCallback((nodeId: string, settings: Record<string, any>) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              settings
+            }
+          };
         }
+        return node;
+      })
+    );
+  }, []);
 
-        currentNode = nextNode;
-      }
+  const customNodeTypes = useMemo<NodeTypes>(() => ({
+    nodeBase: (props) => (
+      <NodeBase
+        {...props}
+        onSettingsChange={(settings) => handleNodeSettingsChange(props.id, settings)}
+      />
+    ),
+  }), [handleNodeSettingsChange]);
 
-      setNodes(updatedNodes);
-    };
-
-    processData();
-  }, [nodes, edges]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
       {/* Sidebar */}
       <div style={{ width: '250px', background: '#1a1a1a', padding: '20px', borderRight: '1px solid #333' }}>
         <h3 style={{ color: 'white', marginBottom: '20px' }}>Node Types</h3>
-        {nodeTemplates.map((node) => (
+        {nodeTypes.map((node) => (
           <div
-            key={node.type}
+            key={node.title}
             draggable
-            onDragStart={(e) => onDragStart(e, node.type)}
+            onDragStart={(e) => onDragStart(e, node.title)}
             style={{
               background: '#2a2a2a',
               padding: '10px',
@@ -163,7 +130,7 @@ function App() {
               color: 'white',
             }}
           >
-            <div style={{ fontWeight: 'bold' }}>{node.label}</div>
+            <div style={{ fontWeight: 'bold' }}>{node.title}</div>
             <div style={{ fontSize: '12px', opacity: 0.7 }}>{node.description}</div>
           </div>
         ))}
@@ -177,7 +144,7 @@ function App() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          nodeTypes={nodeTypes}
+          nodeTypes={customNodeTypes}
           fitView
         >
           <Controls />

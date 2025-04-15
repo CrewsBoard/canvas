@@ -1,17 +1,70 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Handle, Position } from 'reactflow';
-import { NodeUIConfig } from '../../types/flow-node';
+import { NodeUiConfig, NodeTypes } from '../../types/flow-node';
+import NodeForm from '../NodeForm';
+import AgentNode from './AgentNode';
+import ConditionNode from './ConditionNode';
+import ToolNode from './ToolNode';
+import CrewNode from './CrewNode';
 
 interface NodeBaseProps {
-  config: NodeUIConfig;
+  config?: NodeUiConfig;
   children?: React.ReactNode;
   data?: {
     input?: any;
     output?: any;
+    settings?: Record<string, any>;
+    config?: NodeUiConfig;
   };
+  onSettingsChange?: (settings: Record<string, any>) => void;
 }
 
-const NodeBase: React.FC<NodeBaseProps> = ({ config, children, data }) => {
+const NodeBase: React.FC<NodeBaseProps> = ({ 
+  config: propConfig, 
+  children, 
+  data,
+  onSettingsChange 
+}) => {
+  const [showForm, setShowForm] = useState(false);
+  const config = propConfig || data?.config;
+
+  if (!config) {
+    return null;
+  }
+
+  const handleSettingsSave = (values: Record<string, any>) => {
+    if (onSettingsChange) {
+      onSettingsChange(values);
+    }
+    setShowForm(false);
+  };
+
+  const hasFields = config.fields && config.fields.length > 0;
+
+  const renderNodeContent = () => {
+    const nodeProps = {
+      config,
+      data: {
+        settings: data?.settings,
+        input: data?.input,
+        output: data?.output
+      }
+    };
+
+    switch (config.type as NodeTypes) {
+      case 'agent':
+        return <AgentNode {...nodeProps} />;
+      case 'condition':
+        return <ConditionNode {...nodeProps} />;
+      case 'tool':
+        return <ToolNode {...nodeProps} />;
+      case 'crew':
+        return <CrewNode {...nodeProps} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       style={{
@@ -24,7 +77,7 @@ const NodeBase: React.FC<NodeBaseProps> = ({ config, children, data }) => {
       }}
     >
       {/* Input Handles */}
-      {config.inputs.map((input, index) => (
+      {config.inputs?.map((input, index) => (
         <Handle
           key={`input-${input.name}`}
           type="target"
@@ -40,48 +93,28 @@ const NodeBase: React.FC<NodeBaseProps> = ({ config, children, data }) => {
       ))}
 
       {/* Node Content */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-        <span style={{ marginRight: '8px', fontSize: '20px' }}>{config.icon}</span>
-        <div>
-          <div style={{ fontWeight: 'bold' }}>{config.title}</div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>{config.description}</div>
-        </div>
-      </div>
+      {renderNodeContent()}
 
-      {/* Input Data */}
-      {data?.input && (
-        <div style={{ 
-          background: 'rgba(0,0,0,0.2)', 
-          padding: '8px', 
-          borderRadius: '4px',
-          marginBottom: '8px',
-          fontSize: '12px'
-        }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Input:</div>
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-            {JSON.stringify(data.input, null, 2)}
-          </pre>
-        </div>
-      )}
-
-      {/* Output Data */}
-      {data?.output && (
-        <div style={{ 
-          background: 'rgba(0,0,0,0.2)', 
-          padding: '8px', 
-          borderRadius: '4px',
-          marginBottom: '8px',
-          fontSize: '12px'
-        }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Output:</div>
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-            {JSON.stringify(data.output, null, 2)}
-          </pre>
-        </div>
+      {/* Settings Button */}
+      {hasFields && (
+        <button
+          onClick={() => setShowForm(true)}
+          style={{
+            background: 'rgba(255,255,255,0.2)',
+            border: 'none',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            color: 'white',
+            cursor: 'pointer',
+            marginBottom: '8px'
+          }}
+        >
+          Configure
+        </button>
       )}
 
       {/* Output Handles */}
-      {config.outputs.map((output, index) => (
+      {config.outputs?.map((output, index) => (
         <Handle
           key={`output-${output.name}`}
           type="source"
@@ -95,6 +128,24 @@ const NodeBase: React.FC<NodeBaseProps> = ({ config, children, data }) => {
           }}
         />
       ))}
+
+      {/* Settings Form */}
+      {showForm && hasFields && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          marginTop: '10px'
+        }}>
+          <NodeForm
+            fields={config.fields}
+            onSave={handleSettingsSave}
+            onCancel={() => setShowForm(false)}
+          />
+        </div>
+      )}
 
       {children}
     </div>
