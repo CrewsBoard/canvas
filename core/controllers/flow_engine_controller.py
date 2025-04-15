@@ -76,7 +76,9 @@ class FlowEngineController(BaseController):
             self.flow_chains[flow_chain.id] = flow_chain
             nodes: List[Any] = []
             for node_request in flow_chain.nodes:
-                node_class = FlowNodeRegistry.get_plugin(node_request.node_template_id)
+                node_class = FlowNodeRegistry.get_plugin(
+                    request.get("node_template_id")
+                )
                 if not isinstance(node_request.configuration, dict):
                     node_request.configuration = node_request.configuration.model_dump()
                 node = node_class(

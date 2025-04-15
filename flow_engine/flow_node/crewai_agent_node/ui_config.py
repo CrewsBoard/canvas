@@ -40,5 +40,26 @@ ui_config: NodeUiConfig = NodeUiConfig(
             default=[],
             required=False,
         ),
+        NodeUiFields(
+            label="Max Iterations",
+            description="Max Iterations",
+            type="int",
+            default=1,
+            required=False,
+        ),
+        NodeUiFields(
+            label="Allow Delegation",
+            description="Allow Delegation",
+            type="bool",
+            default=False,
+            required=False,
+        ),
+        NodeUiFields(
+            label="Model ID",
+            description="Model ID",
+            type="list[str]",
+            default="",
+            required=True,
+        ),
     ],
 )
