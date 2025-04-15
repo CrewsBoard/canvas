@@ -2,6 +2,8 @@ from typing import Dict, Any, List, Optional
 
 from pydantic import BaseModel
 
+from .node_ui_config import NodeUiConfig
+
 
 class NodeRequest(BaseModel):
     name: str
@@ -22,6 +24,14 @@ class ConnectionRequest(BaseModel):
 class FlowChainRequest(BaseModel):
     name: str
     nodes: List[NodeRequest]
+    connections: List[ConnectionRequest]
+    first_node_id: str
+    debug_mode: bool = False
+
+
+class FlowEngineRequest(BaseModel):
+    name: str
+    nodes: List[NodeUiConfig]
     connections: List[ConnectionRequest]
     first_node_id: str
     debug_mode: bool = False

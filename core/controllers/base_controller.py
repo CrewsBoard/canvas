@@ -1,4 +1,4 @@
-from shared.services.context_manager import ContextManager
+from shared.services.context_manager.context_manager_service import ContextManager
 
 
 class BaseController(ContextManager):

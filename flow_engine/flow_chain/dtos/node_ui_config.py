@@ -17,6 +17,8 @@ class NodeUiFields(BaseModel):
 
 class NodeUiConfig(BaseModel):
     id: Optional[UUID4] = None
+    is_start_node: Optional[bool] = False
+    debug_mode: Optional[bool] = False
     type: NodeTypes
     name: str
     title: str

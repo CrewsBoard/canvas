@@ -5,3 +5,4 @@ class NodeTypes(str, Enum):
     AGENT = "agent"
     CONDITION = "condition"
     TOOL = "tool"
+    CREW = "crew"

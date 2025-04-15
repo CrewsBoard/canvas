@@ -16,6 +16,7 @@ class ModelSchema(BaseSchema, table=True):
     model_type: str = Field(nullable=False)
     description: Optional[str] = Field(nullable=True)
     api_key: Optional[str] = Field(nullable=True)
+    # @todo add is_default prop
 
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now())

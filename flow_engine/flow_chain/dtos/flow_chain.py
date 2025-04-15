@@ -1,14 +1,19 @@
-from dataclasses import dataclass
-from typing import List, Any
+from typing import List
+
+from pydantic import BaseModel
 
 from .node_connection import NodeConnection
+from ...flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import (
+    ToolNodeDto,
+    CrewAIAgentNodeDTO,
+)
 
 
-@dataclass
-class FlowChain:
+class FlowChain(BaseModel):
     id: str
     name: str
-    nodes: List[Any]
+    description: str
+    nodes: List[ToolNodeDto | CrewAIAgentNodeDTO]
     connections: List[NodeConnection]
     first_node_id: str
     debug_mode: bool = False

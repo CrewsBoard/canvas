@@ -2,7 +2,7 @@ import importlib
 import os
 from typing import Dict, Type
 
-from flow_engine.flow_chain.services import FlowNode
+from flow_engine.flow_chain.services.flow_node import FlowNode
 from shared.utils import logger
 from shared.utils.funcs import get_root_path
 
@@ -19,7 +19,6 @@ class FlowNodeRegistry:
 
     @classmethod
     def initialize(cls) -> None:
-        """Explicitly initialize the registry and load plugins."""
         if not cls._initialized:
             logger.info("Initializing FlowNodeRegistry...")
             cls._load_all_plugins()
@@ -30,7 +29,6 @@ class FlowNodeRegistry:
 
     @classmethod
     def _load_all_plugins(cls) -> None:
-        """Dynamically load all plugin modules from the flow_node directory."""
         flow_nodes_path = os.path.join(get_root_path(), "flow_engine", "flow_node")
         logger.info(f"Loading plugins from: {flow_nodes_path}")
 
@@ -42,8 +40,7 @@ class FlowNodeRegistry:
                 module_name = f"flow_engine.flow_node.{node_dir}.{node_dir}"
                 logger.info(f"Attempting to load module: {module_name}")
                 module = importlib.import_module(module_name)
-
-                # Find the plugin class (class that ends with 'Node')
+                logger.info(f"Successfully imported module: {module_name}")
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
                     if (
@@ -51,10 +48,15 @@ class FlowNodeRegistry:
                         and issubclass(attr, FlowNode)
                         and attr_name.endswith("Node")
                     ):
-                        # The plugin type is determined by the class name without 'Node' suffix
-                        plugin_type = attr_name[:-4].lower()
-                        cls._plugins[plugin_type] = attr
-                        logger.info(f"Registered plugin: {plugin_type}")
+                        logger.info(f"Found Node class: {attr_name}")
+                        if hasattr(attr, "_plugin_type"):
+                            plugin_type = attr._plugin_type
+                            cls._plugins[plugin_type] = attr
+                            logger.info(f"Registered plugin: {plugin_type}")
+                        else:
+                            logger.warning(
+                                f"Plugin class {attr_name} is not registered with @FlowNodeRegistry.register()"
+                            )
             except Exception as e:
                 logger.error(f"Error loading plugin from {node_dir}: {e}")
                 continue
@@ -62,7 +64,10 @@ class FlowNodeRegistry:
     @classmethod
     def register(cls, plugin_type: str):
         def decorator(plugin_class: Type[FlowNode]):
-            cls._plugins[plugin_type] = plugin_class
+            logger.info(
+                f"Registering plugin type: {plugin_type} for class: {plugin_class.__name__}"
+            )
+            plugin_class._plugin_type = plugin_type
             return plugin_class
 
         return decorator

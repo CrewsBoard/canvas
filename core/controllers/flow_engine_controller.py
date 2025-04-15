@@ -1,19 +1,20 @@
 import importlib
+import json
 import os
 import uuid
 from typing import Dict, Any, List
 
 from fastapi import APIRouter, HTTPException
+from starlette.responses import StreamingResponse
 
 from core.controllers.base_controller import BaseController
-from flow_engine.flow_chain.dtos import NodeConnection, NodeUiConfig
-from flow_engine.flow_chain.dtos.flow_engine import (
-    FlowChainRequest,
-    MessageRequest,
-    FlowChainResponse,
+from flow_engine.flow_chain.dtos import (
+    NodeUiConfig,
+    FlowChain,
+    NodeTypes,
 )
 from flow_engine.flow_chain.services import FlowNodeRegistry
-from flow_engine.flow_chain.services.flow_chain_service import FlowChainService
+from shared.utils import logger
 from shared.utils.funcs import get_root_path
 
 
@@ -29,25 +30,17 @@ class FlowEngineController(BaseController):
             response_model=List[NodeUiConfig],
         )
         self.router.add_api_route(
-            "/flow-chains",
-            self.create_flow_chain,
-            methods=["POST"],
-            response_model=FlowChainResponse,
-        )
-        self.router.add_api_route(
-            "/flow-chains/{chain_id}",
-            self.get_flow_chain,
-            methods=["GET"],
-            response_model=FlowChainResponse,
-        )
-        self.router.add_api_route(
-            "/flow-chains/{chain_id}/process",
-            self.process_message,
+            "/crewai/flow-chains",
+            self.create_crewai_flow_chain,
             methods=["POST"],
             response_model=Dict[str, Any],
         )
-
-        self.flow_chains: Dict[str, FlowChainService] = {}
+        self.router.add_api_route(
+            "/crewai/flow-chains/{chain_id}/execute",
+            self.execute_crewai_flow_chain,
+            methods=["POST"],
+            response_model=Dict[str, Any],
+        )
 
     @staticmethod
     async def get_node_types() -> List[NodeUiConfig]:
@@ -70,70 +63,115 @@ class FlowEngineController(BaseController):
                     print(f"Error loading {ui_config_path}: {e}")
         return node_ui_configs
 
-    async def create_flow_chain(self, request: FlowChainRequest) -> FlowChainResponse:
+    async def create_crewai_flow_chain(self, request: Dict[str, Any]) -> Dict[str, Any]:
         try:
-            nodes = []
-            node_name_to_id = {}
-            for node_request in request.nodes:
-                node_class = FlowNodeRegistry.get_plugin(node_request.type)
+            flow_chain = FlowChain(
+                id=str(uuid.uuid4()),
+                name=request.get("name", "Unnamed CrewAI Flow"),
+                description=request.get("description"),
+                nodes=request.get("nodes", []),
+                connections=request.get("connections", []),
+                debug_mode=request.get("debug_mode", False),
+                first_node_id=request.get("first_node_id"),
+            )
+            self.flow_chains[flow_chain.id] = flow_chain
+            nodes: List[Any] = []
+            for node_request in flow_chain.nodes:
+                if node_request.node_template_id == "crewai_agent":
+                    has_at_least_one_agent = True
+                node_class = FlowNodeRegistry.get_plugin(node_request.node_template_id)
+                if not isinstance(node_request.configuration, dict):
+                    node_request.configuration = node_request.configuration.model_dump()
                 node = node_class(
-                    name=node_request.name, configuration=node_request.configuration
+                    flow_chain_id=flow_chain.id,
+                    node_id=node_request.id,
+                    name=node_request.name,
+                    node_type=node_request.node_type,
+                    configuration=node_request.configuration,
+                    connections=flow_chain.connections,
                 )
                 nodes.append(node)
-                node_name_to_id[node_request.name] = node.id
-
-            connections = [
-                NodeConnection(
-                    from_node_id=node_name_to_id[conn.from_node],
-                    to_node_id=node_name_to_id[conn.to_node],
-                    label=conn.type,
-                )
-                for conn in request.connections
-            ]
-
-            chain_id = str(uuid.uuid4())
-            flow_chain = FlowChainService(
-                id=chain_id,
-                name=request.name,
-                nodes=nodes,
-                connections=connections,
-                first_node_id=node_name_to_id.get(request.first_node_id),
-                debug_mode=request.debug_mode,
-            )
-
-            self.flow_chains[chain_id] = flow_chain
-
-            return FlowChainResponse(
-                id=chain_id,
-                name=request.name,
-                status="created",
-                message="Flow chain created successfully",
-            )
+            self.flow_nodes[flow_chain.id] = nodes
+            return {
+                "flow_chain_id": flow_chain.id,
+                "message": "CrewAI flow chain created successfully",
+                "crew_created": True,
+            }
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            # raise HTTPException(status_code=500, detail=str(e))
+            logger.error(e)
+            return {
+                "flow_chain_id": None,
+                "message": str(e),
+                "crew_created": False,
+            }
 
-    async def get_flow_chain(self, chain_id: str) -> FlowChainResponse:
-        if chain_id not in self.flow_chains:
-            raise HTTPException(status_code=404, detail="Flow chain not found")
-
-        chain = self.flow_chains[chain_id]
-        return FlowChainResponse(
-            id=chain.id,
-            name=chain.name,
-            status="active",
-            message="Flow chain retrieved successfully",
-        )
-
-    async def process_message(
-        self, chain_id: str, message: MessageRequest
-    ) -> Dict[str, Any]:
-        if chain_id not in self.flow_chains:
-            raise HTTPException(status_code=404, detail="Flow chain not found")
-
+    async def execute_crewai_flow_chain(self, chain_id: str, request: Dict[str, Any]):
         try:
-            result = self.flow_chains[chain_id].process_message(
-                {"data": message.dict()}
+            flow_chain = self.flow_chains[chain_id]
+            if not flow_chain:
+                raise HTTPException(
+                    status_code=404, detail="CrewAI flow chain not found"
+                )
+            first_node_id = flow_chain.first_node_id
+            self.flow_chain_events[chain_id] = {}
+            self.flow_chain_events[chain_id]["traversed_node"] = []
+            self.flow_chain_events[chain_id]["traversed_node"].append(first_node_id)
+            flow_nodes = self.flow_nodes.get(flow_chain.id)
+            total_tool_nodes = len(
+                [
+                    node
+                    for node in flow_nodes
+                    if node.type == NodeTypes.TOOL or node.type == NodeTypes.CREW
+                ]
             )
-            return result
+
+            async def stream_data():
+                last_index = 0
+                user_msg = request
+                has_init = False
+                while True:
+                    if not has_init:
+                        self.event.set()
+                        has_init = True
+                    await self.event.wait()
+                    self.event.clear()
+
+                    while last_index <= total_tool_nodes - 1:
+                        traversed_node = self.flow_chain_events.get(flow_chain.id).get(
+                            "traversed_node"
+                        )
+                        if len(traversed_node) == last_index:
+                            yield json.dumps(
+                                {
+                                    "flow_chain_id": chain_id,
+                                    "message": "Flow chain completed",
+                                }
+                            ).encode("utf-8")
+                            return
+                        flow_node_id = traversed_node[last_index]
+                        all_msg = self.flow_chain_events.get(flow_chain.id).get(
+                            "message"
+                        )
+                        node_msg = None
+                        if all_msg:
+                            node_msg = all_msg.get(flow_node_id)
+                        message = node_msg if node_msg else user_msg
+
+                        flow_node = next(
+                            (node for node in flow_nodes if node.id == flow_node_id),
+                            None,
+                        )
+                        flow_node.process(message)
+                        last_index += 1
+                        yield json.dumps(
+                            self.flow_chain_events.get(flow_chain.id)
+                        ).encode("utf-8")
+                        if last_index == len(flow_chain.nodes) - 1:
+                            yield json.dumps(
+                                {"flow_chain_id": chain_id, "result": message}
+                            ).encode("utf-8")
+
+            return StreamingResponse(stream_data(), media_type="text/event-stream")
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e))

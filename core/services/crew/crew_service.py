@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from crewai import Crew
 from crewai.crews import CrewOutput
@@ -18,6 +18,8 @@ from shared.utils import logger
 
 
 class CrewService(BaseService[CrewDto, Crew]):
+    crews: Dict[str, Crew] = {}
+
     def __init__(
         self,
         agent_service: AgentService,

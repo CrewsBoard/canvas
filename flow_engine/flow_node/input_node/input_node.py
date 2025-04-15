@@ -1,26 +1,29 @@
-from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, List
 
-from flow_engine.flow_chain.services import FlowNodeRegistry, FlowNode
+from flow_engine.flow_chain.dtos import NodeTypes, NodeConnection
+from flow_engine.flow_chain.services import FlowNodeRegistry
+from flow_engine.flow_chain.services.flow_node import FlowNode
 
 
 @FlowNodeRegistry.register("input")
 class InputNode(FlowNode):
-    def __init__(self, name: str, configuration: Dict[str, Any] = None):
-        super().__init__(name, "input", configuration)
+    def __init__(
+        self,
+        flow_chain_id: str,
+        node_id: str,
+        name: str,
+        node_type: NodeTypes,
+        configuration: Dict[str, Any] = None,
+        connections: List[NodeConnection] = None,
+    ):
+        super().__init__(
+            flow_chain_id=flow_chain_id,
+            node_id=node_id,
+            name=name,
+            node_type=node_type,
+            configuration=configuration,
+            connections=connections,
+        )
 
-    def process(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Process the input message and add timestamp if configured.
-        """
-        message_data = message.copy().get("data").get("data")
-
-        if self.configuration.get("add_timestamp", False):
-            message_data["timestamp"] = datetime.utcnow().isoformat()
-
-        required_fields = self.configuration.get("required_fields", [])
-        for field in required_fields:
-            if field not in message_data:
-                raise ValueError(f"Required field '{field}' not found in message")
-
-        return message_data
+    def process(self, message: Dict[str, Any]):
+        self.next(message)

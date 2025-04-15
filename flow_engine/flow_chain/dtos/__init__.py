@@ -1,4 +1,5 @@
 from .flow_chain import FlowChain
+from .flow_engine import FlowEngineRequest
 from .flow_engine import (
     MessageRequest,
     FlowChainRequest,
