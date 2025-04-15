@@ -12,6 +12,7 @@ authors = [
 dependencies = [
     "asyncpg>=0.30.0",
     "crewai>=0.108.0",
+    "crewai-tools>=0.40.1",
     "fastapi>=0.115.9",
     "greenlet>=3.1.1",
     "gunicorn>=23.0.0",

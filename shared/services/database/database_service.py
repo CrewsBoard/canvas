@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, async_sessi
 from sqlmodel import SQLModel
 
 from core.services.core import settings
-from core.services.database.abstract_database_service import AbstractDatabaseService
+from shared.services.database.abstract_database_service import AbstractDatabaseService
 from shared.utils import logger
 from shared.utils.funcs import get_root_path
 

@@ -74,6 +74,8 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv pip install -e .
 ```
 
+4. Create DB named `canvas` in postgres
+
 ## 🏃 Running the Application
 
 Start the development server:

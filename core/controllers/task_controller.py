@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import UUID4
 
-from core.controllers import BaseController
+from core.controllers.base_controller import BaseController
 from core.dtos.task import TaskDto
 
 

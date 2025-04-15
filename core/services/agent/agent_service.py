@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from crewai import Agent
 from pydantic import validate_call
@@ -18,6 +18,8 @@ from core.services.relation.relation_service import RelationService
 
 
 class AgentService(BaseService[AgentDto, Agent]):
+    agent_flows: Dict[str, List["AgentFlow"]] = {}
+
     def __init__(
         self,
         relation_service: RelationService,
@@ -40,10 +42,10 @@ class AgentService(BaseService[AgentDto, Agent]):
             llm = await self.model_service.build(
                 ModelEntity(agent_entity_details.llm_id)
             )
-        prompt_entities: List[
-            PromptEntity
-        ] = await self.relation_service.get_related_entities(
-            entity, RelationDirection.TO, PromptEntity
+        prompt_entities: List[PromptEntity] = (
+            await self.relation_service.get_related_entities(
+                entity, RelationDirection.TO, PromptEntity
+            )
         )
         prompt_details: list[PromptDto] = await self.prompt_service.read_by_ids(
             prompt_entities

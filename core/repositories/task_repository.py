@@ -1,6 +1,6 @@
 from core.repositories.base_repository import BaseRepository
 from core.repositories.schemas.task_schema import TaskSchema
-from core.services.database import database_service
+from shared.services.database import database_service
 
 
 class TaskRepository(BaseRepository[TaskSchema]):

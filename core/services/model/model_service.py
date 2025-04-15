@@ -17,6 +17,7 @@ class ModelService(BaseService[ModelDto, LLM]):
 
     @validate_call
     async def build(self, entity: ModelEntity):
+        # @todo handle model_id=None with is_default prop
         model_entity = await self.read(entity.id)
         if model_entity is None:
             raise Exception(f"Model {entity.id} not found")

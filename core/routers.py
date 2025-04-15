@@ -1,4 +1,4 @@
-from fastapi.routing import APIRouter
+from fastapi import APIRouter
 
 from core.controllers import (
     AgentController,
@@ -7,6 +7,7 @@ from core.controllers import (
     ModelController,
     RelationController,
     CrewController,
+    FlowEngineController,
 )
 
 routes: list[APIRouter] = [
@@ -16,4 +17,5 @@ routes: list[APIRouter] = [
     ModelController().router,
     RelationController().router,
     CrewController().router,
+    FlowEngineController().router,
 ]

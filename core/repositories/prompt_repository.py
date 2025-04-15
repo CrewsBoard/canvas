@@ -1,6 +1,6 @@
 from core.repositories.base_repository import BaseRepository
 from core.repositories.schemas.prompt_schema import PromptSchema
-from core.services.database import database_service
+from shared.services.database import database_service
 
 
 class PromptRepository(BaseRepository[PromptSchema]):

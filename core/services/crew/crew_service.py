@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from crewai import Crew
 from crewai.crews import CrewOutput
@@ -18,6 +18,8 @@ from shared.utils import logger
 
 
 class CrewService(BaseService[CrewDto, Crew]):
+    crews: Dict[str, Crew] = {}
+
     def __init__(
         self,
         agent_service: AgentService,
@@ -32,10 +34,10 @@ class CrewService(BaseService[CrewDto, Crew]):
 
     async def build(self, entity: CrewEntity):
         crew_entity = await self.read(entity.id)
-        agent_entities: List[
-            AgentEntity
-        ] = await self.relation_service.get_related_entities(
-            entity, RelationDirection.TO, AgentEntity
+        agent_entities: List[AgentEntity] = (
+            await self.relation_service.get_related_entities(
+                entity, RelationDirection.TO, AgentEntity
+            )
         )
         agents = await self.agent_service.build_all(agent_entities)
         task_entities = await self.relation_service.get_related_entities(
