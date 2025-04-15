@@ -28,3 +28,4 @@ class NodeUiConfig(BaseModel):
     inputs: List[InputTypes]
     outputs: List[OutputTypes]
     fields: List[NodeUiFields]
+    node_template_id: str

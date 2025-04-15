@@ -10,6 +10,7 @@ ui_config: NodeUiConfig = NodeUiConfig(
     color="#9C27B0",
     inputs=[InputTypes.SUCCESS],
     outputs=[OutputTypes.SUCCESS],
+    node_template_id="crewai_agent",
     fields=[
         NodeUiFields(
             label="Agent Role",

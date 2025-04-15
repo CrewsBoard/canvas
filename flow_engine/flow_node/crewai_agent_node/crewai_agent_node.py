@@ -38,7 +38,6 @@ class CrewAiAgentNode(FlowNode):
             name=name,
             node_type=node_type,
             configuration=CrewAiAgentNodeConfiguration.model_validate(configuration),
-            node_template_id="crewai_agent",
         )
         self.connections = connections
         self.agent: Optional[Agent] = None

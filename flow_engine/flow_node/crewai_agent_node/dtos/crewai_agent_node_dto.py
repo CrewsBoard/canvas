@@ -21,7 +21,6 @@ class ToolNodeDto(BaseModel):
     name: str
     node_type: NodeTypes
     configuration: dict
-    node_template_id: str
 
 
 class CrewAIAgentNodeDTO(BaseModel):
@@ -29,6 +28,5 @@ class CrewAIAgentNodeDTO(BaseModel):
     name: str
     node_type: NodeTypes
     configuration: CrewAiAgentNodeConfiguration
-    node_template_id: str
     allow_delegation: Optional[bool] = False
     tools: Optional[List[BaseTool]] = []

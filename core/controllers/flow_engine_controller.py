@@ -14,7 +14,6 @@ from flow_engine.flow_chain.dtos import (
     NodeTypes,
 )
 from flow_engine.flow_chain.services import FlowNodeRegistry
-from shared.utils import logger
 from shared.utils.funcs import get_root_path
 
 
@@ -77,8 +76,6 @@ class FlowEngineController(BaseController):
             self.flow_chains[flow_chain.id] = flow_chain
             nodes: List[Any] = []
             for node_request in flow_chain.nodes:
-                if node_request.node_template_id == "crewai_agent":
-                    has_at_least_one_agent = True
                 node_class = FlowNodeRegistry.get_plugin(node_request.node_template_id)
                 if not isinstance(node_request.configuration, dict):
                     node_request.configuration = node_request.configuration.model_dump()
@@ -98,13 +95,7 @@ class FlowEngineController(BaseController):
                 "crew_created": True,
             }
         except Exception as e:
-            # raise HTTPException(status_code=500, detail=str(e))
-            logger.error(e)
-            return {
-                "flow_chain_id": None,
-                "message": str(e),
-                "crew_created": False,
-            }
+            raise HTTPException(status_code=500, detail=str(e))
 
     async def execute_crewai_flow_chain(self, chain_id: str, request: Dict[str, Any]):
         try:

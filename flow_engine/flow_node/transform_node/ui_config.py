@@ -10,6 +10,7 @@ ui_config: NodeUiConfig = NodeUiConfig(
     color="#2196F3",
     inputs=[InputTypes.SUCCESS],
     outputs=[OutputTypes.SUCCESS, OutputTypes.FAILURE],
+    node_template_id="transform",
     fields=[
         NodeUiFields(
             label="Transformations",

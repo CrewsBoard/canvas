@@ -10,6 +10,7 @@ ui_config: NodeUiConfig = NodeUiConfig(
     color="#FF9800",
     inputs=[InputTypes.SUCCESS],
     outputs=[],
+    node_template_id="output",
     fields=[
         NodeUiFields(
             label="Output Data",
