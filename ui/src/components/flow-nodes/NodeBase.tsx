@@ -51,6 +51,7 @@ const NodeBase: React.FC<NodeBaseProps> = ({
       }
     };
 
+    // @todo take it from node_template_id
     switch (config.type as NodeTypes) {
       case 'agent':
         return <AgentNode {...nodeProps} />;
