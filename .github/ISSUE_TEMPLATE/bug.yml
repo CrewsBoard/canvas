@@ -74,7 +74,7 @@ body:
       description: If applicable, add a minimal code example that reproduces the issue.
       render: python
       placeholder: |
-        import voice_transcribe
+        import canvas
 
         # Example code that triggers the issue
 
@@ -86,7 +86,6 @@ body:
         - Canvas version:
         - Python version:
         - Operating system and version:
-        - Voice model/implementation used:
         - Hardware specs (if relevant):
         - Virtual environment tool (venv/conda/etc.):
 
