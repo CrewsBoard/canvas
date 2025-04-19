@@ -1,0 +1,73 @@
+services:
+  core:
+    build:
+      context: .
+      dockerfile: docker/core/Dockerfile
+      args:
+        APP_NAME: ${APP_NAME}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./core:/${APP_NAME}/core
+      - ./shared:/${APP_NAME}/shared
+      - ./flow_engine:/${APP_NAME}/flow_engine
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-dev}
+      - APP_NAME=${APP_NAME}
+      - PYTHONPATH=/${APP_NAME}
+    command: >
+      sh -c "
+        if [ \"$$ENVIRONMENT\" = \"dev\" ]; then
+          uvicorn core.main:create_app --host 0.0.0.0 --port 8000 --reload;
+        else
+          gunicorn core.main:create_app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000;
+        fi
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  ui:
+    build:
+      context: .
+      target: ${ENVIRONMENT:-dev}
+      dockerfile: docker/ui/Dockerfile
+      args:
+        APP_NAME: ${APP_NAME}
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./ui:/${APP_NAME}
+      - /${APP_NAME}/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+      - APP_NAME=${APP_NAME}
+    depends_on:
+      core:
+        condition: service_healthy
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
