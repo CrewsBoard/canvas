@@ -16,12 +16,12 @@ def get_root_path() -> str:
 
 def get_project_name() -> str:
     """
-    Get the project name based on the root path of the given module.
+    Get the project name based on the APP_NAME environment variable.
 
     Returns:
         str: The name of the project.
     """
-    return "canvas"
+    return os.environ.get("APP_NAME", "canvas")
 
 
 def make_snake_case(string: str) -> str:

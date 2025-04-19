@@ -1,8 +1,9 @@
-import { NodeUIConfig } from '../types/flow-node';
+/// <reference types="vite/client" />
+import { NodeUiConfig } from '../types/flow-node';
 
-const API_BASE_URL = 'http://localhost:8001'; // Update this with your actual API URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-export const fetchNodeTypes = async (): Promise<NodeUIConfig[]> => {
+export const fetchNodeTypes = async (): Promise<NodeUiConfig[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/node-types`);
     if (!response.ok) {

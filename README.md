@@ -16,6 +16,8 @@ API interface for interacting with AI agents and managing their workflows.
 - Comprehensive API documentation
 - CORS support
 - Development server with hot reload
+- Docker support for easy deployment
+- Separate UI service
 
 ## 🛠️ Development Status
 
@@ -27,6 +29,7 @@ API interface for interacting with AI agents and managing their workflows.
 - Basic agent management
 - Database integration
 - Configuration management
+- Docker containerization
 
 ## 🏗️ Project Structure
 
@@ -43,85 +46,14 @@ canvas/
 │   ├── main.py            # Application entry point
 │   └── routers.py         # API route definitions
 ├── shared/                 # Shared utilities and common code
+├── scripts/               # Development scripts
 ├── .github/               # GitHub configuration
 └── .venv/                 # Virtual environment
 ```
 
-## ⚙️ Prerequisites
-
-- Python 3.10.11 or higher
-- uv package manager
-
-## 🚀 Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/CrewsBoard/canvas.git
-cd canvas
-```
-
-2. Create and activate a virtual environment:
-
-```bash
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
-
-3. Install dependencies:
-
-```bash
-uv pip install -e .
-```
-
-4. Create DB named `canvas` in postgres
-
-## 🏃 Running the Application
-
-Start the development server:
-
-```bash
-export PYTHONPATH="$PYTHONPATH:$(pwd)" && gunicorn -w 4 -k uvicorn.workers.UvicornWorker core.main:create_app # or python -m core.main
-```
-
-The API will be available at:
-
-- API Documentation: http://localhost:8001/docs
-- ReDoc Documentation: http://localhost:8001/redoc
-
-## 🧪 Development
-
-### Code Formatting
-
-```bash
-black .
-```
-
-### Linting
-
-```bash
-ruff check .
-```
-
-### Type Checking
-
-```bash
-mypy .
-```
-
-### Running Tests
-
-```bash
-pytest
-```
-
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+For detailed information about contributing to this project, including setup instructions and development workflow, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 ## 📝 License
 
@@ -137,11 +69,11 @@ This project is licensed under the terms of the LICENSE file in the root of this
 
 ### [Unreleased]
 
-- Initial project setup
-- Basic FastAPI application structure
-- Database integration with SQLModel
-- Configuration management with Pydantic Settings
-- Development tools setup (Black, Ruff, MyPy, Pytest)
+- Updated Python version to 3.11
+- Added Docker support with core and UI services
+- Added environment configuration
+- Added contribution guidelines
+- Added Makefile-based development workflow
 
 ---
 

@@ -1,7 +1,15 @@
+app_name: "canvas"
+
 server:
   name: "Stage Server"
   debug: False
 
 database:
-  url: "postgresql+asyncpg://postgres:postgres@localhost:5432/canvas"
+  url: "postgresql+asyncpg://postgres:postgres@db:5432/canvas"
+  user: "postgres"
+  password: "postgres"
+  db: "canvas"
   schema_package: "core.repositories.schemas"
+
+ui:
+  vite_api_url: "http://localhost:8000"
