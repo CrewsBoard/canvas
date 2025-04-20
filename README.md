@@ -1,17 +1,17 @@
 # Canvas
 
-A modern FastAPI-based application for managing and orchestrating AI agents using CrewAI.
+A modern FastAPI-based application for managing and orchestrating AI agents using ai framework.
 
 ## 🚀 Overview
 
-Canvas is a powerful platform that leverages CrewAI to create, manage, and orchestrate AI agents. It provides a robust
+Canvas is a powerful platform to create, manage, and orchestrate AI agents. It provides a robust
 API interface for interacting with AI agents and managing their workflows.
 
 ### Core Objectives
 
 1. **Framework-Agnostic Node Architecture**
    - Nodes can be either intelligent (AI-powered) or traditional
-   - No preference for any specific framework
+   - No preference for any specific AI framework
    - Flexible integration of different agent types
    - Support for both AI and non-AI components
 
