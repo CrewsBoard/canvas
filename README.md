@@ -7,6 +7,26 @@ A modern FastAPI-based application for managing and orchestrating AI agents usin
 Canvas is a powerful platform that leverages CrewAI to create, manage, and orchestrate AI agents. It provides a robust
 API interface for interacting with AI agents and managing their workflows.
 
+### Core Objectives
+
+1. **Framework-Agnostic Node Architecture**
+   - Nodes can be either intelligent (AI-powered) or traditional
+   - No preference for any specific framework
+   - Flexible integration of different agent types
+   - Support for both AI and non-AI components
+
+2. **Plug-and-Play Development**
+   - Simplified frontend and backend development
+   - Easy node integration and deployment
+   - Standardized interfaces for node communication
+   - Rapid prototyping and testing capabilities
+
+3. **Event-Driven Node-Based Architecture**
+   - Asynchronous event processing
+   - Decoupled node communication
+   - Scalable and maintainable system design
+   - Real-time event handling and propagation
+
 ## 📋 Features
 
 - FastAPI-based REST API
