@@ -26,8 +26,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/docs" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -55,19 +59,56 @@ services:
   db:
     image: postgres:15-alpine
     ports:
-      - "5434:5432"
+      - "${POSTGRES_PORT}:5432"
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_USER=${POSTGRES_USER_NAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -p 5432"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER_NAME} -p 5432" ]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 10s
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${MSG_BROKER_REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass ${MSG_BROKER_REDIS_PASSWORD:-redis} --appendonly yes
+    environment:
+      - REDIS_PASSWORD=${MSG_BROKER_REDIS_PASSWORD:-redis}
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${MSG_BROKER_REDIS_PASSWORD:-redis}", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "${MSG_BROKER_RABBITMQ_PORT}:5672"
+      - "${MSG_BROKER_RABBITMQ_UI_PORT}:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${MSG_BROKER_RABBITMQ_USERNAME}
+      - RABBITMQ_DEFAULT_PASS=${MSG_BROKER_RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
 volumes:
   postgres_data:
+  redis_data:
+  rabbitmq_data:

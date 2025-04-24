@@ -37,7 +37,17 @@ esac
 eval $(yaml_to_env $CONFIG_FILE)
 
 export APP_NAME=$app_name
-export POSTGRES_USER=$database_user
-export POSTGRES_PASSWORD=$database_password
-export POSTGRES_DB=$database_db
 export VITE_API_URL=$ui_vite_api_url
+
+export POSTGRES_PORT=$database_port
+export POSTGRES_DB_NAME=$database_db_name
+export POSTGRES_USER_NAME=$database_username
+export POSTGRES_PASSWORD=$database_password
+
+export MSG_BROKER_REDIS_PORT=$msg_broker_redis_port
+export MSG_BROKER_REDIS_PASSWORD=$msg_broker_redis_password
+
+export MSG_BROKER_RABBITMQ_PORT=$msg_broker_rabbitmq_port
+export MSG_BROKER_RABBITMQ_UI_PORT=$msg_broker_rabbitmq_ui_port
+export MSG_BROKER_RABBITMQ_USERNAME=$msg_broker_rabbitmq_username
+export MSG_BROKER_RABBITMQ_PASSWORD=$msg_broker_flow_engine_node_msg_processor_password
