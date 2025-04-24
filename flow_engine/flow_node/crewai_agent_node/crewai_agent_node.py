@@ -42,7 +42,6 @@ class CrewAiAgentNode(FlowNode):
         self.connections = connections
         self.agent: Optional[Agent] = None
         self.connected_nodes: List[Dict[str, Any]] = []
-        # Create a task for async initialization
         asyncio.create_task(self._initialize_agent())
 
     async def _initialize_agent(self) -> None:

@@ -51,7 +51,8 @@ class DatabaseService(AbstractDatabaseService):
     @staticmethod
     def _create_engine() -> AsyncEngine:
         try:
-            return create_async_engine(settings.database.url, echo=True)
+            database_url = f"{settings.database.type.value}+{settings.database.driver}://{settings.database.username}:{settings.database.password}@{settings.database.host}:{settings.database.port}/{settings.database.db_name}"
+            return create_async_engine(database_url, echo=True)
         except Exception as e:
             logger.error(f"Error creating engine: {e}")
             raise e
