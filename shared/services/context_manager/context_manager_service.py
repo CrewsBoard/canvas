@@ -8,6 +8,7 @@ from core.services.prompt.prompt_service import PromptService
 from core.services.relation.relation_service import RelationService
 from core.services.task.task_service import TaskService
 from flow_engine.flow_chain.dtos import FlowChain
+from shared.services.msg_broker import MessageBrokerService, AbstractMessageBroker
 
 
 class ContextManager:
@@ -15,6 +16,10 @@ class ContextManager:
     flow_nodes: Dict[str, List["FlowNode"]] = {}
     event = asyncio.Event()
     flow_chain_events: Dict[str, Dict[str, Any]] = {}
+
+    redis_service: AbstractMessageBroker = asyncio.run(
+        MessageBrokerService.get_instance()
+    )
 
     def __init__(self):
         self.prompt_service: PromptService = PromptService()

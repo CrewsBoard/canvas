@@ -30,6 +30,8 @@ msg_broker:
     ui_port: 15672
     username: "guest"
     password: "guest"
+    exchange: "canvas_rabbitmq_exchange"
+    exchange_type: "direct"
 
 flow_engine:
   msg_broker: "redis" # redis or "rabbitmq"

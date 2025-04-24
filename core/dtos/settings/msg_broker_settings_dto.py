@@ -1,3 +1,4 @@
+from aio_pika import ExchangeType
 from pydantic import BaseModel
 
 
@@ -13,6 +14,8 @@ class RabbitMQSettingsDto(BaseModel):
     port: int
     username: str
     password: str
+    exchange: str
+    exchange_type: ExchangeType
 
 
 class MsgBrokerSettingsDto(BaseModel):
