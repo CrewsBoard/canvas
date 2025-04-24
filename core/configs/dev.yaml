@@ -5,11 +5,36 @@ server:
   debug: True
 
 database:
-  url: "postgresql+asyncpg://postgres:postgres@db:5432/canvas"
-  user: "postgres"
+  driver: "asyncpg"
+  type: "postgresql"
+  host: "localhost"
+  port: 5434
+  db_name: "canvas"
+  username: "postgres"
   password: "postgres"
-  db: "canvas"
   schema_package: "core.repositories.schemas"
 
 ui:
   vite_api_url: "http://localhost:8000"
+
+msg_broker:
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: "redis"
+
+  rabbitmq:
+    host: "localhost"
+    port: 5672
+    ui_port: 15672
+    username: "guest"
+    password: "guest"
+
+flow_engine:
+  msg_broker: "redis" # redis or "rabbitmq"
+  channel: "canvas_flow_engine"
+
+flow_nodes:
+  msg_broker: "redis" # redis or "rabbitmq"
+  channel: "canvas_flow_nodes"
