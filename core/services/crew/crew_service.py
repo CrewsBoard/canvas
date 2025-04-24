@@ -14,7 +14,7 @@ from core.services.agent.agent_service import AgentService
 from core.services.core import BaseService
 from core.services.relation.relation_service import RelationService
 from core.services.task.task_service import TaskService
-from shared.utils import logger
+from shared.utils.logger import logger
 
 
 class CrewService(BaseService[CrewDto, Crew]):
@@ -34,10 +34,10 @@ class CrewService(BaseService[CrewDto, Crew]):
 
     async def build(self, entity: CrewEntity):
         crew_entity = await self.read(entity.id)
-        agent_entities: List[AgentEntity] = (
-            await self.relation_service.get_related_entities(
-                entity, RelationDirection.TO, AgentEntity
-            )
+        agent_entities: List[
+            AgentEntity
+        ] = await self.relation_service.get_related_entities(
+            entity, RelationDirection.TO, AgentEntity
         )
         agents = await self.agent_service.build_all(agent_entities)
         task_entities = await self.relation_service.get_related_entities(

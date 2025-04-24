@@ -9,9 +9,7 @@ from shared.utils.funcs import get_project_name
 
 
 class SettingsService(BaseSettings, SettingsDto):
-    model_config = {
-        "extra": "ignore"
-    }
+    model_config = {"extra": "ignore"}
 
     @classmethod
     def settings_customise_sources(

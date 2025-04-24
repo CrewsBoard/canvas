@@ -3,7 +3,7 @@ from typing import Optional, Dict
 from core.services.core import settings
 from shared.dtos.msg_broker import MsgBrokerTypes
 from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
-from shared.utils import logger
+from shared.utils.logger import logger
 from .rabbitmq.rabbitmq_broker import RabbitMQMessageBroker
 from .redis.redis_broker import RedisMessageBroker
 

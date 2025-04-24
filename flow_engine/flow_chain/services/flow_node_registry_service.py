@@ -3,8 +3,8 @@ import os
 from typing import Dict, Type
 
 from flow_engine.flow_chain.services.flow_node import FlowNode
-from shared.utils import logger
 from shared.utils.funcs import get_root_path
+from shared.utils.logger import logger
 
 
 class FlowNodeRegistry:

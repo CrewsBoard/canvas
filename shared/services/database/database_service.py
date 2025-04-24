@@ -10,8 +10,8 @@ from sqlmodel import SQLModel
 
 from core.services.core import settings
 from shared.services.database.abstract_database_service import AbstractDatabaseService
-from shared.utils import logger
 from shared.utils.funcs import get_root_path
+from shared.utils.logger import logger
 
 
 class DatabaseService(AbstractDatabaseService):
