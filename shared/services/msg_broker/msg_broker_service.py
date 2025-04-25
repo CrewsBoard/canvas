@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from core.services.core import settings
 from shared.dtos.msg_broker import MsgBrokerTypes
@@ -13,8 +13,12 @@ class MessageBrokerService:
     _instances: Dict[str, AbstractMessageBroker] = {}
 
     @classmethod
-    async def get_instance(cls) -> AbstractMessageBroker:
-        broker_type = settings.msg_broker.active or MsgBrokerTypes.REDIS.value
+    async def get_instance(
+        cls, broker_type: Optional[MsgBrokerTypes] = None
+    ) -> AbstractMessageBroker:
+        broker_type = (
+            broker_type or settings.msg_broker.active or MsgBrokerTypes.REDIS.value
+        )
         kwargs = cls._get_args(broker_type)
 
         key = f"{broker_type}:{kwargs['host']}:{kwargs['port']}"

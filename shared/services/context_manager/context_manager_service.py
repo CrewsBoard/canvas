@@ -8,6 +8,7 @@ from core.services.prompt.prompt_service import PromptService
 from core.services.relation.relation_service import RelationService
 from core.services.task.task_service import TaskService
 from flow_engine.flow_chain.dtos import FlowChain
+from shared.dtos.msg_broker import MsgBrokerTypes
 from shared.services.msg_broker import MessageBrokerService, AbstractMessageBroker
 
 
@@ -17,7 +18,10 @@ class ContextManager:
     event = asyncio.Event()
     flow_chain_events: Dict[str, Dict[str, Any]] = {}
 
-    redis_service: AbstractMessageBroker = asyncio.run(
+    caching_service: AbstractMessageBroker = asyncio.run(
+        MessageBrokerService.get_instance(MsgBrokerTypes.REDIS)
+    )
+    msg_broker_service: AbstractMessageBroker = asyncio.run(
         MessageBrokerService.get_instance()
     )
 
