@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Dict
 
 from core.services.core import settings
 from shared.dtos.msg_broker import MsgBrokerTypes
@@ -13,33 +13,17 @@ class MessageBrokerService:
     _instances: Dict[str, AbstractMessageBroker] = {}
 
     @classmethod
-    async def get_instance(
-        cls,
-        broker_type: Optional[MsgBrokerTypes] = None,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        **kwargs,
-    ) -> AbstractMessageBroker:
-        broker_type = broker_type or MsgBrokerTypes.REDIS.value
-        host = host or settings.msg_broker.redis.host
-        port = port or settings.msg_broker.redis.port
+    async def get_instance(cls) -> AbstractMessageBroker:
+        broker_type = settings.msg_broker.active or MsgBrokerTypes.REDIS.value
+        kwargs = cls._get_args(broker_type)
 
-        if broker_type == MsgBrokerTypes.REDIS:
-            kwargs.setdefault("db", settings.msg_broker.redis.db)
-            kwargs.setdefault("password", settings.msg_broker.redis.password)
-        elif broker_type == MsgBrokerTypes.RABBITMQ:
-            kwargs.setdefault("username", settings.msg_broker.rabbitmq.username)
-            kwargs.setdefault("password", settings.msg_broker.rabbitmq.password)
-
-        key = f"{broker_type}:{host}:{port}"
+        key = f"{broker_type}:{kwargs['host']}:{kwargs['port']}"
 
         if key not in cls._instances:
             if broker_type == MsgBrokerTypes.REDIS:
-                cls._instances[key] = RedisMessageBroker(host=host, port=port, **kwargs)
+                cls._instances[key] = RedisMessageBroker(**kwargs)
             elif broker_type == MsgBrokerTypes.RABBITMQ:
-                cls._instances[key] = RabbitMQMessageBroker(
-                    host=host, port=port, **kwargs
-                )
+                cls._instances[key] = RabbitMQMessageBroker(**kwargs)
             else:
                 raise ValueError(f"Unsupported broker type: {broker_type}")
 
@@ -61,10 +45,30 @@ class MessageBrokerService:
         logger.info("All message broker instances closed.")
 
     @classmethod
-    async def close(cls, broker_type: str, host: str, port: int):
-        key = f"{broker_type}:{host}:{port}"
+    async def close(cls, broker_type: str):
+        args = cls._get_args(broker_type)
+        key = f"{broker_type}:{args['host']}:{args['port']}"
         logger.info(f"Closing message broker instance: {key}")
         if key in cls._instances:
             await cls._instances[key].disconnect()
             del cls._instances[key]
         logger.info(f"Closed message broker instance: {key}")
+
+    @staticmethod
+    def _get_args(broker_type: str):
+        if broker_type == MsgBrokerTypes.REDIS:
+            return {
+                "host": settings.msg_broker.redis.host,
+                "port": settings.msg_broker.redis.port,
+                "db": settings.msg_broker.redis.db,
+                "password": settings.msg_broker.redis.password,
+            }
+        elif broker_type == MsgBrokerTypes.RABBITMQ:
+            return {
+                "host": settings.msg_broker.rabbitmq.host,
+                "port": settings.msg_broker.rabbitmq.port,
+                "username": settings.msg_broker.rabbitmq.username,
+                "password": settings.msg_broker.rabbitmq.password,
+            }
+        else:
+            raise ValueError(f"Unsupported broker type: {broker_type}")
