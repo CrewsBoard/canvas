@@ -1,34 +1,16 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, Optional
 
-from flow_engine.flow_chain.dtos import NodeTypes, NodeConnection
+from flow_engine.flow_chain.dtos import FlowNodeConfigs
 from flow_engine.flow_chain.services import FlowNodeRegistry
 from flow_engine.flow_chain.services.flow_node import FlowNode
 
 
 @FlowNodeRegistry.register("transform")
 class TransformNode(FlowNode):
-    def __init__(
-        self,
-        flow_chain_id: str,
-        node_id: str,
-        name: str,
-        node_type: NodeTypes,
-        configuration: Dict[str, Any] = None,
-        connections: List[NodeConnection] = None,
-    ):
-        super().__init__(
-            flow_chain_id=flow_chain_id,
-            node_id=node_id,
-            name=name,
-            node_type=node_type,
-            configuration=configuration,
-            connections=connections,
-        )
+    def __init__(self, config: FlowNodeConfigs):
+        super().__init__(config)
 
-    def process(self, message: Dict[str, Any]):
-        """
-        Apply transformations to the message based on configuration.
-        """
+    async def process(self, message: Optional[Dict[str, Any]] = None) -> None:
         result = message.copy()
         transformations = self.configuration.get("transformations", {})
 
@@ -43,4 +25,4 @@ class TransformNode(FlowNode):
                     if isinstance(result[field], str):
                         result[field] = result[field][::-1]
 
-        self.next(result)
+        await self.next(result)

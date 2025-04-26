@@ -6,6 +6,9 @@ from pydantic import BaseModel, UUID4
 from flow_engine.flow_chain.dtos.node_types import NodeTypes
 
 
+# @todo check these dtos to refactor them all
+
+
 class CrewAiAgentNodeConfiguration(BaseModel):
     role: str
     goal: str
@@ -21,6 +24,7 @@ class ToolNodeDto(BaseModel):
     name: str
     node_type: NodeTypes
     configuration: dict
+    node_template_id: str
 
 
 class CrewAIAgentNodeDTO(BaseModel):
@@ -30,3 +34,4 @@ class CrewAIAgentNodeDTO(BaseModel):
     configuration: CrewAiAgentNodeConfiguration
     allow_delegation: Optional[bool] = False
     tools: Optional[List[BaseTool]] = []
+    node_template_id: Optional[str] = None

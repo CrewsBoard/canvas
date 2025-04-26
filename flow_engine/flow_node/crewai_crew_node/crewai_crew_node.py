@@ -1,4 +1,5 @@
-from typing import List, Dict, Any
+import asyncio
+from typing import List, Optional, Dict, Any
 
 from crewai import Task, Crew
 from crewai.utilities.events import (
@@ -8,7 +9,7 @@ from crewai.utilities.events import (
 )
 from crewai.utilities.events.base_event_listener import BaseEventListener
 
-from flow_engine.flow_chain.dtos import NodeTypes, NodeConnection
+from flow_engine.flow_chain.dtos import NodeTypes, FlowNodeConfigs
 from flow_engine.flow_chain.services import FlowNodeRegistry
 from flow_engine.flow_chain.services.flow_node import FlowNode
 from flow_engine.flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import (
@@ -19,40 +20,29 @@ from flow_engine.flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import (
 
 @FlowNodeRegistry.register("crewai_crew")
 class CrewAiCrewNode(FlowNode, BaseEventListener):
-    def __init__(
-        self,
-        name: str,
-        node_id: str,
-        node_type: NodeTypes,
-        flow_chain_id: str,
-        configuration: Dict[str, Any],
-        connections: List[NodeConnection] = None,
-    ):
-        super().__init__(
-            flow_chain_id=flow_chain_id,
-            node_id=node_id,
-            name=name,
-            node_type=node_type,
-            configuration=configuration,
-            connections=connections,
-        )
+    def __init__(self, config: FlowNodeConfigs):
+        super().__init__(config)
         self.temp_removed_connections = []
 
-    def _initialize_crew(self) -> None:
-        self.flow_chain = self.flow_chains[self.flow_chain_id]
+    async def _initialize_crew(self) -> None:
+        flow_chain_data = await self.flow_engine_service.read_flow_chains(
+            self.flow_chain_id
+        )
+        self.flow_chain = flow_chain_data[0]
         self.agents = [
             agent_flow.agent
-            for agent_flow in self.agent_service.agent_flows[self.flow_chain_id]
+            for agent_flow in self.flow_engine_service.flow_engine_agent_factory.get(
+                self.flow_chain_id
+            )
         ]
-        tasks = self._create_tasks_from_chain()
+        tasks = await self._create_tasks_from_chain()
         self.crew = Crew(
             agents=self.agents,
             tasks=tasks,
             verbose=True,
         )
-        self.crew_service.crews[self.flow_chain.id] = self.crew
 
-    def _create_tasks_from_chain(self) -> List[Task]:
+    async def _create_tasks_from_chain(self) -> List[Task]:
         tasks = []
 
         for node in self.flow_chain.nodes:
@@ -125,9 +115,9 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
 
         return tasks
 
-    def process(self, input_data: dict):
-        self._initialize_crew()
-        self.crew.kickoff(inputs=input_data)
+    async def process(self, message: Optional[Dict[str, Any]] = None) -> None:
+        await self._initialize_crew()
+        await self.crew.kickoff_async(inputs=message)
 
     def get_crew(self) -> Crew:
         return self.crew
@@ -143,6 +133,8 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
             print(f"Output: {event.output}")
             for conn in self.temp_removed_connections:
                 self.connections.append(conn)
+            # @todo decide what to do with the output
+            # asyncio.run(self.next({"message": event.output}))
 
         @crewai_event_bus.on(AgentExecutionCompletedEvent)
         def on_agent_execution_completed(source, event):
@@ -173,4 +165,4 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
                     and conn.to_node_id != connection_to_be_removed.to_node_id
                 ]
                 self.temp_removed_connections.append(connection_to_be_removed)
-            self.next({"message": event.output}, event.agent.role)
+            asyncio.run(self.next({"message": event.output}, event.agent.role))
