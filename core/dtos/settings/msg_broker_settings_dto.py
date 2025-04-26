@@ -1,6 +1,8 @@
 from aio_pika import ExchangeType
 from pydantic import BaseModel
 
+from shared.dtos.msg_broker import MsgBrokerTypes
+
 
 class RedisSettingsDto(BaseModel):
     host: str
@@ -19,5 +21,6 @@ class RabbitMQSettingsDto(BaseModel):
 
 
 class MsgBrokerSettingsDto(BaseModel):
+    active: MsgBrokerTypes
     redis: RedisSettingsDto
     rabbitmq: RabbitMQSettingsDto

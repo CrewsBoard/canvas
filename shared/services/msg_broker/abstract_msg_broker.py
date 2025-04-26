@@ -2,6 +2,8 @@ import json
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, Callable, Awaitable
 
+from pydantic import BaseModel
+
 
 class AbstractMessageBroker(ABC):
     """Abstract base class for message brokers."""
@@ -61,6 +63,10 @@ class AbstractMessageBroker(ABC):
     @staticmethod
     def serialize(value: Any) -> str:
         """Serialize a value to a string."""
+        if isinstance(value, str):
+            return value
+        if isinstance(value, BaseModel):
+            return value.model_dump_json()
         return json.dumps(value)
 
     @staticmethod

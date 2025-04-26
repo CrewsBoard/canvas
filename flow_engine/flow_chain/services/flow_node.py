@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, List
 from crewai.tools import BaseTool
 from crewai_tools.tools.serper_dev_tool.serper_dev_tool import SerperDevTool, logger
 
-from flow_engine.flow_chain.dtos import NodeConnection, NodeTypes
+from flow_engine.flow_chain.dtos import NodeTypes, FlowNodeConfigs
 from flow_engine.flow_node.crewai_agent_node.tools.format_output_tool import (
     prepare_transform_node_input,
 )
@@ -12,32 +12,27 @@ from shared.services.context_manager.context_manager_service import ContextManag
 
 
 class FlowNode(ABC, ContextManager):
-    def __init__(
-        self,
-        flow_chain_id: str,
-        name: str,
-        node_type: NodeTypes,
-        node_id: Optional[str] = "flow_node",
-        configuration: Optional[Dict[str, Any]] = None,
-        connections: Optional[List[NodeConnection]] = None,
-    ):
+    def __init__(self, config: FlowNodeConfigs):
         super().__init__()
-        self.flow_chain_id = flow_chain_id
-        self.id = node_id
-        self.name = name
-        self.type = node_type
-        self.configuration = configuration or {}
-        self.connections = connections or []
+        # @todo remove unnecessary params
+        self.flow_chain_id = config.flow_chain_id
+        self.id = config.node_id
+        self.name = config.name
+        self.type = config.node_type
+        self.configuration = config.configuration or {}
+        self.connections = config.connections or []
 
     @abstractmethod
-    def process(self, message: Dict[str, Any]) -> None:
+    async def process(self, message: Optional[Dict[str, Any]] = None) -> None:
         """
         Process the incoming message and return the result.
         This method must be implemented by all flow nodes.
         """
         pass
 
-    def next(self, message: Dict[str, Any], node_id: Optional[str] = None) -> None:
+    async def next(
+        self, message: Dict[str, Any], node_id: Optional[str] = None
+    ) -> None:
         """
         Find out the next connected node and append the node into event queue for processing.
         """
@@ -54,8 +49,6 @@ class FlowNode(ABC, ContextManager):
             ),
             None,
         )
-        if "message" not in self.flow_chain_events[self.flow_chain_id].keys():
-            self.flow_chain_events[self.flow_chain_id]["message"] = {}
         if next_connection:
             if (
                 next_connection.to_node_type == NodeTypes.AGENT
@@ -70,20 +63,26 @@ class FlowNode(ABC, ContextManager):
                 return
             if (
                 next_connection.to_node_id
-                not in self.flow_chain_events[self.flow_chain_id]["traversed_node"]
+                not in self.flow_engine_service.flow_engine_event_factory.get(
+                    self.flow_chain_id
+                ).traversed_node
             ):
-                self.flow_chain_events[self.flow_chain_id]["traversed_node"].append(
-                    next_connection.to_node_id
-                )
-            self.flow_chain_events[self.flow_chain_id]["message"][
-                next_connection.to_node_id
-            ] = message
-            self.event.set()
+                self.flow_engine_service.flow_engine_event_factory.get(
+                    self.flow_chain_id
+                ).traversed_node.append(next_connection.to_node_id)
+
+            self.flow_engine_service.flow_engine_event_factory.get(
+                self.flow_chain_id
+            ).message[next_connection.to_node_id] = message
+
+            self.flow_engine_service.event.set()
         else:
             logger.warning(
-                f"{', '.join(self.flow_chain_events[self.flow_chain_id]['traversed_node'])} completed"
+                f"{', '.join(self.flow_engine_service.flow_engine_event_factory.get(self.flow_chain_id).traversed_node)} completed"
             )
-            logger.info(f"Final message: {self.flow_chain_events[self.flow_chain_id]}")
+            logger.info(
+                f"Final message: {self.flow_engine_service.flow_engine_event_factory.get(self.flow_chain_id).message}"
+            )
 
     def validate_configuration(self) -> bool:
         """

@@ -2,18 +2,19 @@ import importlib
 import json
 import os
 import uuid
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from fastapi import APIRouter, HTTPException
+from pydantic import UUID4
 from starlette.responses import StreamingResponse
 
 from core.controllers.base_controller import BaseController
+from core.dtos.flow_engine import FlowEngineEventFactory
 from flow_engine.flow_chain.dtos import (
     NodeUiConfig,
     FlowChain,
     NodeTypes,
 )
-from flow_engine.flow_chain.services import FlowNodeRegistry
 from shared.utils.funcs import get_root_path
 
 
@@ -29,18 +30,25 @@ class FlowEngineController(BaseController):
             response_model=List[NodeUiConfig],
         )
         self.router.add_api_route(
-            "/crewai/flow-chains",
-            self.create_crewai_flow_chain,
+            "/flow-chain",
+            self.create_or_update_flow_chain,
             methods=["POST"],
             response_model=Dict[str, Any],
         )
         self.router.add_api_route(
-            "/crewai/flow-chains/{chain_id}/execute",
-            self.execute_crewai_flow_chain,
+            "/flow-chains",
+            self.read_flow_chains,
+            methods=["GET"],
+            response_model=List[FlowChain],
+        )
+        self.router.add_api_route(
+            "/flow-chain/{flow_chain_id}/execute",
+            self.execute_flow_chain,
             methods=["POST"],
             response_model=Dict[str, Any],
         )
 
+    # @todo this should be connected to db
     @staticmethod
     async def get_node_types() -> List[NodeUiConfig]:
         node_types = []
@@ -62,7 +70,9 @@ class FlowEngineController(BaseController):
                     print(f"Error loading {ui_config_path}: {e}")
         return node_ui_configs
 
-    async def create_crewai_flow_chain(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def create_or_update_flow_chain(
+        self, request: Dict[str, Any]
+    ) -> Dict[str, Any]:
         try:
             flow_chain = FlowChain(
                 id=str(uuid.uuid4()),
@@ -73,24 +83,7 @@ class FlowEngineController(BaseController):
                 debug_mode=request.get("debug_mode", False),
                 first_node_id=request.get("first_node_id"),
             )
-            self.flow_chains[flow_chain.id] = flow_chain
-            nodes: List[Any] = []
-            for node_request in flow_chain.nodes:
-                node_class = FlowNodeRegistry.get_plugin(
-                    request.get("node_template_id")
-                )
-                if not isinstance(node_request.configuration, dict):
-                    node_request.configuration = node_request.configuration.model_dump()
-                node = node_class(
-                    flow_chain_id=flow_chain.id,
-                    node_id=node_request.id,
-                    name=node_request.name,
-                    node_type=node_request.node_type,
-                    configuration=node_request.configuration,
-                    connections=flow_chain.connections,
-                )
-                nodes.append(node)
-            self.flow_nodes[flow_chain.id] = nodes
+            await self.flow_engine_service.save_flow_chain(flow_chain)
             return {
                 "flow_chain_id": flow_chain.id,
                 "message": "CrewAI flow chain created successfully",
@@ -99,24 +92,29 @@ class FlowEngineController(BaseController):
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    async def execute_crewai_flow_chain(self, chain_id: str, request: Dict[str, Any]):
+    async def read_flow_chains(
+        self, flow_chain_id: Optional[UUID4] = None
+    ) -> List[FlowChain]:
+        return await self.flow_engine_service.read_flow_chains(flow_chain_id)
+
+    async def execute_flow_chain(self, flow_chain_id: UUID4, request: Dict[str, Any]):
         try:
-            flow_chain = self.flow_chains[chain_id]
+            flow_chains = await self.flow_engine_service.read_flow_chains(flow_chain_id)
+            flow_chain = flow_chains[0]
             if not flow_chain:
                 raise HTTPException(
                     status_code=404, detail="CrewAI flow chain not found"
                 )
             first_node_id = flow_chain.first_node_id
-            self.flow_chain_events[chain_id] = {}
-            self.flow_chain_events[chain_id]["traversed_node"] = []
-            self.flow_chain_events[chain_id]["traversed_node"].append(first_node_id)
-            flow_nodes = self.flow_nodes.get(flow_chain.id)
-            total_tool_nodes = len(
-                [
-                    node
-                    for node in flow_nodes
-                    if node.type == NodeTypes.TOOL or node.type == NodeTypes.CREW
-                ]
+            self.flow_engine_service.flow_engine_event_factory[
+                flow_chain_id
+            ] = FlowEngineEventFactory()
+            self.flow_engine_service.flow_engine_event_factory[
+                flow_chain_id
+            ].traversed_node.append(first_node_id)
+            flow_nodes = await self.flow_engine_service.get_flow_nodes(flow_chain)
+            total_tool_nodes = self.flow_engine_service.total_none_agent_node(
+                flow_chain_id
             )
 
             async def stream_data():
@@ -125,44 +123,54 @@ class FlowEngineController(BaseController):
                 has_init = False
                 while True:
                     if not has_init:
-                        self.event.set()
+                        self.flow_engine_service.event.set()
                         has_init = True
-                    await self.event.wait()
-                    self.event.clear()
+                    await self.flow_engine_service.event.wait()
+                    self.flow_engine_service.event.clear()
 
                     while last_index <= total_tool_nodes - 1:
-                        traversed_node = self.flow_chain_events.get(flow_chain.id).get(
-                            "traversed_node"
+                        traversed_node = (
+                            self.flow_engine_service.flow_engine_event_factory.get(
+                                flow_chain_id
+                            ).traversed_node
                         )
                         if len(traversed_node) == last_index:
                             yield json.dumps(
                                 {
-                                    "flow_chain_id": chain_id,
+                                    "flow_chain_id": str(flow_chain_id),
                                     "message": "Flow chain completed",
                                 }
                             ).encode("utf-8")
                             return
                         flow_node_id = traversed_node[last_index]
-                        all_msg = self.flow_chain_events.get(flow_chain.id).get(
-                            "message"
+                        all_msg = (
+                            self.flow_engine_service.flow_engine_event_factory.get(
+                                flow_chain_id
+                            ).message
                         )
-                        node_msg = None
-                        if all_msg:
-                            node_msg = all_msg.get(flow_node_id)
+                        node_msg = all_msg.get(flow_node_id) if all_msg else None
                         message = node_msg if node_msg else user_msg
 
                         flow_node = next(
-                            (node for node in flow_nodes if node.id == flow_node_id),
+                            (
+                                flow_nodes[node_type][flow_node_id]
+                                for node_type in flow_nodes
+                                if node_type is not NodeTypes.AGENT
+                                and flow_nodes.get(node_type).get(flow_node_id)
+                                is not None
+                            ),
                             None,
                         )
-                        flow_node.process(message)
+                        await flow_node.process(message)
                         last_index += 1
                         yield json.dumps(
-                            self.flow_chain_events.get(flow_chain.id)
+                            self.flow_engine_service.flow_engine_event_factory.get(
+                                flow_chain_id
+                            ).model_dump()
                         ).encode("utf-8")
                         if last_index == len(flow_chain.nodes) - 1:
                             yield json.dumps(
-                                {"flow_chain_id": chain_id, "result": message}
+                                {"flow_chain_id": str(flow_chain_id), "result": message}
                             ).encode("utf-8")
 
             return StreamingResponse(stream_data(), media_type="text/event-stream")
