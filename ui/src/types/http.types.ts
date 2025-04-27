@@ -35,6 +35,7 @@ export class HttpError extends Error {
 export const BASE_URL = 'http://localhost:3001/api';
 
 export interface HttpOptions<TData, TVariables = void> {
+    // @todo query key can be the url so need to be decided
     queryKey: string[];
     url: string;
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
