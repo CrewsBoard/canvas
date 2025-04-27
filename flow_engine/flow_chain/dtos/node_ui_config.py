@@ -15,6 +15,7 @@ class NodeUiFields(BaseModel):
     required: Optional[bool] = None
 
 
+# @todo refactor or remove unnecessary fields
 class NodeUiConfig(BaseModel):
     id: Optional[UUID4] = None
     is_start_node: Optional[bool] = False
@@ -29,3 +30,4 @@ class NodeUiConfig(BaseModel):
     outputs: List[OutputTypes]
     fields: List[NodeUiFields]
     node_template_id: str
+    ui_bundle: Optional[str] = None
