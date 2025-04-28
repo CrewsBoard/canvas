@@ -4,7 +4,7 @@ from flow_engine.flow_chain.dtos.node_ui_config import NodeUiFields
 ui_config: NodeUiConfig = NodeUiConfig(
     is_start_node=True,
     type=NodeTypes.CREW,
-    name="crewai_crew_start_node",
+    name="crewai_crew_node",
     title="CrewAI Crew Start Node",
     description="Start node for CrewAI",
     icon="ai",
