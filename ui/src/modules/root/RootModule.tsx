@@ -1,91 +1,140 @@
-import React, {useCallback, useState} from 'react';
+import DnDPanel from '@/modules/root/dndPanel';
+import NodeEditor from '@/modules/root/editor';
+import { useNodeRegistryStore } from '@/stores/nodeRegistryStore';
+import { NodeComponentProps } from '@/types/flowNode.types.ts';
 import {
-    applyEdgeChanges,
-    applyNodeChanges,
-    Background,
-    Controls,
-    Edge,
-    EdgeChange,
-    Node,
-    NodeChange,
-    ReactFlow
+  addEdge,
+  Background,
+  Controls,
+  Edge,
+  MarkerType,
+  MiniMap,
+  Node,
+  Panel,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
+  type OnConnect,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import Sidebar from '@/components/sidebar/Sidebar';
-import {useNodeRegistryStore} from '@/stores/nodeRegistryStore';
-import {NodeComponentProps} from "@/types/flowNode.types.ts";
+import React, { useCallback, useRef, useState } from 'react';
+
+const defaultEdgeOptions = {
+  type: 'input',
+  animated: true,
+  markerEnd: { type: MarkerType.ArrowClosed },
+};
 
 const RootModule: React.FC = () => {
-    const [nodes, setNodes] = useState<Node[]>([]);
-    const [edges, setEdges] = useState<Edge[]>([]);
-    const {nodeUiConfigs, nodeComponents} = useNodeRegistryStore();
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
+  const [showNodeEditor, setShowNodeEditor] = useState(false);
 
-    const onDragStart = useCallback((event: React.DragEvent, nodeType: string) => {
-        event.dataTransfer.setData('application/reactflow', nodeType);
-        event.dataTransfer.effectAllowed = 'move';
-    }, []);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
-    const onDrop = useCallback((event: React.DragEvent) => {
-        event.preventDefault();
+  //   const onDragStart = useCallback((event: React.DragEvent, nodeType: string) => {
+  //     event.dataTransfer.setData('application/reactflow', nodeType);
+  //     event.dataTransfer.effectAllowed = 'move';
+  //   }, []);
 
-        const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-        const type = event.dataTransfer.getData('application/reactflow');
-        const position = {
-            x: event.clientX - reactFlowBounds.left,
-            y: event.clientY - reactFlowBounds.top,
-        };
+  const toggleNodeEditor = useCallback(() => {
+    setShowNodeEditor(show => !show);
+  }, []);
 
-        const nodeType = nodeUiConfigs[type];
-        const newNode: Node = {
-            id: `${type}-${Date.now()}`,
-            type,
-            position,
-            data: {
-                title: nodeType?.title,
-                agentRole: '',
-                agentGoal: '',
-                settings: {},
-                config: nodeType
-            },
-        };
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
 
-        setNodes((nds) => nds.concat(newNode));
-    }, [nodeUiConfigs]);
+      const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+      const type = event.dataTransfer.getData('application/reactflow');
+      const position = {
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      };
 
-    const onDragOver = useCallback((event: React.DragEvent) => {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-    }, []);
+      const nodeType = nodeUiConfigs[type];
+      const newNode: Node = {
+        id: `${type}-${Date.now()}`,
+        type,
+        position,
+        data: {
+          title: nodeType?.title,
+          agentRole: '',
+          agentGoal: '',
+          settings: {},
+          config: nodeType,
+        },
+      };
 
-    const nodeComponentsParser = Object.entries(nodeUiConfigs).reduce<Record<string, React.FC<NodeComponentProps>>>((componentRecords, [type]) => {
-        const component = nodeComponents[type];
-        if (component) {
-            componentRecords[type] = component.uiComponent;
-        }
-        return componentRecords;
-    }, {});
+      setNodes(nds => nds.concat(newNode));
+    },
+    [nodeUiConfigs, setNodes]
+  );
 
-    return (
-        <div style={{width: '100%', height: '100%', position: 'relative'}}>
-            <Sidebar nodeTypes={nodeUiConfigs} onDragStart={onDragStart}/>
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                nodeTypes={nodeComponentsParser}
-                onNodesChange={(changes: NodeChange[]) => {
-                    setNodes((nds) => applyNodeChanges(changes, nds));
-                }}
-                onEdgesChange={(changes: EdgeChange[]) => {
-                    setEdges((eds) => applyEdgeChanges(changes, eds));
-                }}
-                onDrop={onDrop}
-                onDragOver={onDragOver}
-            >
-                <Background/>
-                <Controls/>
-            </ReactFlow>
-        </div>
-    );
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onConnect: OnConnect = useCallback(
+    connection => setEdges(edges => addEdge(connection, edges)),
+    [setEdges]
+  );
+
+  const nodeComponentsParser = Object.entries(nodeUiConfigs).reduce<
+    Record<string, React.FC<NodeComponentProps>>
+  >((componentRecords, [type]) => {
+    const component = nodeComponents[type];
+    if (component) {
+      componentRecords[type] = component.uiComponent;
+    }
+    return componentRecords;
+  }, {});
+
+  return (
+    // <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    //   <ReactFlow
+    //     nodes={nodes}
+    //     edges={edges}
+    //     nodeTypes={nodeComponentsParser}
+    //     onNodesChange={(changes: NodeChange[]) => {
+    //       setNodes(nds => applyNodeChanges(changes, nds));
+    //     }}
+    //     onEdgesChange={(changes: EdgeChange[]) => {
+    //       setEdges(eds => applyEdgeChanges(changes, eds));
+    //     }}
+    //     onDrop={onDrop}
+    //     onDragOver={onDragOver}
+    //   >
+    //     <Background />
+    //     <Controls />
+    //   </ReactFlow>
+    // </div>
+    <div className="h-full flex flex-row" ref={reactFlowWrapper}>
+      <ReactFlow
+        nodes={nodes}
+        nodeTypes={nodeComponentsParser}
+        onNodesChange={onNodesChange}
+        edges={edges}
+        // edgeTypes={edgeTypes}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        defaultEdgeOptions={defaultEdgeOptions}
+        fitView
+      >
+        <Background />
+        <MiniMap />
+        <Controls />
+        <Panel position="top-left">
+          <DnDPanel nodeTypes={nodeUiConfigs} />
+        </Panel>
+        <Panel position="top-right">{showNodeEditor && <NodeEditor />}</Panel>
+      </ReactFlow>
+    </div>
+  );
 };
 
 export default RootModule;
