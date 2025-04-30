@@ -1,17 +1,15 @@
-import { useDnD } from '@/libs/hooks/useDnD';
 import { DnDPanelProps } from '@/modules/root/dndPanel.types';
-import React from 'react';
 
-export default function DnDPanel({ nodeTypes }: DnDPanelProps) {
-  const { setDraggedType } = useDnD();
+export default function DnDPanel({ nodeTypes, onDragStart }: DnDPanelProps) {
+  // const { setDraggedType } = useDnD();
 
-  const onDragStart = (
-    event: React.DragEvent<HTMLDivElement | HTMLButtonElement>,
-    nodeType: string
-  ) => {
-    setDraggedType(nodeType);
-    event.dataTransfer.effectAllowed = 'move';
-  };
+  // const onDragStart = (
+  //   event: React.DragEvent<HTMLDivElement | HTMLButtonElement>,
+  //   nodeType: string
+  // ) => {
+  //   setDraggedType(nodeType);
+  //   event.dataTransfer.effectAllowed = 'move';
+  // };
 
   return (
     <aside className="space-y-4 w-40">

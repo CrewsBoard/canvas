@@ -27,18 +27,21 @@ const defaultEdgeOptions = {
 
 const RootModule: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  console.log('🚀 ~ nodes:', nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  console.log('🚀 ~ edges:', edges);
   const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
   const [showNodeEditor, setShowNodeEditor] = useState(false);
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
-  //   const onDragStart = useCallback((event: React.DragEvent, nodeType: string) => {
-  //     event.dataTransfer.setData('application/reactflow', nodeType);
-  //     event.dataTransfer.effectAllowed = 'move';
-  //   }, []);
+  const onDragStart = useCallback((event: React.DragEvent, nodeType: string) => {
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.effectAllowed = 'move';
+  }, []);
 
   const toggleNodeEditor = useCallback(() => {
+    console.log('clicked');
     setShowNodeEditor(show => !show);
   }, []);
 
@@ -64,12 +67,13 @@ const RootModule: React.FC = () => {
           agentGoal: '',
           settings: {},
           config: nodeType,
+          showEditor: () => toggleNodeEditor,
         },
       };
 
       setNodes(nds => nds.concat(newNode));
     },
-    [nodeUiConfigs, setNodes]
+    [nodeUiConfigs, setNodes, toggleNodeEditor]
   );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -129,7 +133,7 @@ const RootModule: React.FC = () => {
         <MiniMap />
         <Controls />
         <Panel position="top-left">
-          <DnDPanel nodeTypes={nodeUiConfigs} />
+          <DnDPanel nodeTypes={nodeUiConfigs} onDragStart={onDragStart} />
         </Panel>
         <Panel position="top-right">{showNodeEditor && <NodeEditor />}</Panel>
       </ReactFlow>
