@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import DnDPanel from '@/modules/root/dndPanel';
 import NodeEditor from '@/modules/root/editor';
 import { useNodeRegistryStore } from '@/stores/nodeRegistryStore';
@@ -14,6 +15,7 @@ import {
   ReactFlow,
   useEdgesState,
   useNodesState,
+  useReactFlow,
   type OnConnect,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -25,13 +27,14 @@ const defaultEdgeOptions = {
   markerEnd: { type: MarkerType.ArrowClosed },
 };
 
+const flowKey = 'crews-flow';
+
 const RootModule: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  console.log('🚀 ~ nodes:', nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  console.log('🚀 ~ edges:', edges);
   const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
   const [showNodeEditor, setShowNodeEditor] = useState(false);
+  const { setViewport, toObject } = useReactFlow();
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
@@ -41,7 +44,6 @@ const RootModule: React.FC = () => {
   }, []);
 
   const toggleNodeEditor = useCallback(() => {
-    console.log('clicked');
     setShowNodeEditor(show => !show);
   }, []);
 
@@ -85,6 +87,28 @@ const RootModule: React.FC = () => {
     connection => setEdges(edges => addEdge(connection, edges)),
     [setEdges]
   );
+
+  const onSave = useCallback(() => {
+    const flow = toObject();
+    localStorage.setItem(flowKey, JSON.stringify(flow));
+  }, [toObject]);
+
+  const onRestore = useCallback(() => {
+    const restoreFlow = async () => {
+      const flowString = localStorage.getItem(flowKey);
+      if (!flowString) return;
+
+      const flow = JSON.parse(flowString);
+      if (flow) {
+        const { x = 0, y = 0, zoom = 1 } = flow.viewport || {};
+        setNodes(flow.nodes || []);
+        setEdges(flow.edges || []);
+        setViewport({ x, y, zoom });
+      }
+    };
+
+    restoreFlow();
+  }, [setNodes, setEdges, setViewport]);
 
   const nodeComponentsParser = Object.entries(nodeUiConfigs).reduce<
     Record<string, React.FC<NodeComponentProps>>
@@ -136,6 +160,16 @@ const RootModule: React.FC = () => {
           <DnDPanel nodeTypes={nodeUiConfigs} onDragStart={onDragStart} />
         </Panel>
         <Panel position="top-right">{showNodeEditor && <NodeEditor />}</Panel>
+        <Panel position="top-right">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onSave}>
+              save
+            </Button>
+            <Button variant="outline" onClick={onRestore}>
+              restore
+            </Button>
+          </div>
+        </Panel>
       </ReactFlow>
     </div>
   );
