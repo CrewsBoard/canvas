@@ -52,13 +52,16 @@ const RootModule: React.FC = () => {
       event.preventDefault();
 
       const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-      const type = event.dataTransfer.getData('application/reactflow');
+      if (!reactFlowBounds) return;
+
       const position = {
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
       };
 
+      const type = event.dataTransfer.getData('application/reactflow');
       const nodeType = nodeUiConfigs[type];
+
       const newNode: Node = {
         id: `${type}-${Date.now()}`,
         type,
