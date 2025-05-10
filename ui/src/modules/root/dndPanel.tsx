@@ -17,7 +17,7 @@ export default function DnDPanel({ nodeTypes, onDragStart }: DnDPanelProps) {
         <div
           key={type}
           draggable
-          onDragStart={e => onDragStart(e, type)}
+          onDragStart={e => onDragStart(e, type, def.node_template_id)}
           className="p-2.5 bg-white border border-gray-300 rounded cursor-grab text-xs shadow-sm transition-all hover:translate-x-0.5 hover:shadow-md"
         >
           <div className="font-medium text-gray-800">{def.title || type}</div>

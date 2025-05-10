@@ -19,10 +19,10 @@ import {
   type OnConnect,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const defaultEdgeOptions = {
-  type: 'input',
+  type: 'default',
   animated: true,
   markerEnd: { type: MarkerType.ArrowClosed },
 };
@@ -38,10 +38,14 @@ const RootModule: React.FC = () => {
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
-  const onDragStart = useCallback((event: React.DragEvent, nodeType: string) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
-    event.dataTransfer.effectAllowed = 'move';
-  }, []);
+  const onDragStart = useCallback(
+    (event: React.DragEvent, nodeType: string, templateType: string) => {
+      event.dataTransfer.setData('application/reactflow/node', nodeType);
+      event.dataTransfer.setData('application/reactflow/template', templateType);
+      event.dataTransfer.effectAllowed = 'move';
+    },
+    []
+  );
 
   const toggleNodeEditor = useCallback(() => {
     setShowNodeEditor(show => !show);
@@ -59,7 +63,8 @@ const RootModule: React.FC = () => {
         y: event.clientY - reactFlowBounds.top,
       };
 
-      const type = event.dataTransfer.getData('application/reactflow');
+      const type = event.dataTransfer.getData('application/reactflow/node');
+      const template = event.dataTransfer.getData('application/reactflow/template');
       const nodeType = nodeUiConfigs[type];
 
       const newNode: Node = {
@@ -67,6 +72,7 @@ const RootModule: React.FC = () => {
         type,
         position,
         data: {
+          template: template,
           title: nodeType?.title,
           agentRole: '',
           agentGoal: '',
@@ -113,6 +119,10 @@ const RootModule: React.FC = () => {
     restoreFlow();
   }, [setNodes, setEdges, setViewport]);
 
+  useEffect(() => {
+    onRestore();
+  }, [onRestore]);
+
   const nodeComponentsParser = Object.entries(nodeUiConfigs).reduce<
     Record<string, React.FC<NodeComponentProps>>
   >((componentRecords, [type]) => {
@@ -124,24 +134,6 @@ const RootModule: React.FC = () => {
   }, {});
 
   return (
-    // <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-    //   <ReactFlow
-    //     nodes={nodes}
-    //     edges={edges}
-    //     nodeTypes={nodeComponentsParser}
-    //     onNodesChange={(changes: NodeChange[]) => {
-    //       setNodes(nds => applyNodeChanges(changes, nds));
-    //     }}
-    //     onEdgesChange={(changes: EdgeChange[]) => {
-    //       setEdges(eds => applyEdgeChanges(changes, eds));
-    //     }}
-    //     onDrop={onDrop}
-    //     onDragOver={onDragOver}
-    //   >
-    //     <Background />
-    //     <Controls />
-    //   </ReactFlow>
-    // </div>
     <div className="h-full flex flex-row" ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
