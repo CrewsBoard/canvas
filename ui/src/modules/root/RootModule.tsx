@@ -33,8 +33,10 @@ const RootModule: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
-  const [showNodeEditor, setShowNodeEditor] = useState(false);
   const { setViewport, toObject } = useReactFlow();
+
+  const [showNodeEditor, setShowNodeEditor] = useState(false);
+  const [selectedEditorTemplate, setSelectedEditorTemplate] = useState<string>('');
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
@@ -47,9 +49,15 @@ const RootModule: React.FC = () => {
     []
   );
 
-  const toggleNodeEditor = useCallback(() => {
-    setShowNodeEditor(show => !show);
-  }, []);
+  const toggleNodeEditor = useCallback(
+    (templateType: string) => {
+      if (selectedEditorTemplate !== templateType) {
+        setSelectedEditorTemplate(templateType);
+      }
+      setShowNodeEditor(show => !show);
+    },
+    [selectedEditorTemplate]
+  );
 
   const onDrop = useCallback(
     (event: React.DragEvent) => {
@@ -74,11 +82,11 @@ const RootModule: React.FC = () => {
         data: {
           template: template,
           title: nodeType?.title,
-          agentRole: '',
-          agentGoal: '',
+          agentRole: 'Dummy agent role',
+          agentGoal: 'Dummy agent goal',
           settings: {},
           config: nodeType,
-          showEditor: () => toggleNodeEditor,
+          toggleEditor: () => toggleNodeEditor(template),
         },
       };
 
@@ -154,7 +162,9 @@ const RootModule: React.FC = () => {
         <Panel position="top-left">
           <DnDPanel nodeTypes={nodeUiConfigs} onDragStart={onDragStart} />
         </Panel>
-        <Panel position="top-right">{showNodeEditor && <NodeEditor />}</Panel>
+        <Panel position="top-right">
+          {showNodeEditor && <NodeEditor templateType={selectedEditorTemplate} />}
+        </Panel>
         <Panel position="top-right">
           <div className="flex gap-2">
             <Button variant="outline" onClick={onSave}>

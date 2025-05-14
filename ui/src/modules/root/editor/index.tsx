@@ -1,10 +1,16 @@
 import Container from '@/modules/root/editor/container';
-import InfoEditor from '@/modules/root/editor/info';
+import NodeTemplateFactory from '@/node-templates/NodeTemplateFactory';
 
-export default function NodeEditor() {
+type NodeEditorProps = {
+  templateType: string;
+};
+
+export default function NodeEditor({ templateType }: NodeEditorProps) {
   return (
     <Container>
-      <InfoEditor />
+      <div className="px-4">
+        <NodeTemplateFactory type={templateType} />
+      </div>
     </Container>
   );
 }
