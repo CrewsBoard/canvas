@@ -1,6 +1,5 @@
-import { Button } from '@/components/ui/button';
 import DnDPanel from '@/modules/root/dndPanel';
-import NodeEditor from '@/modules/root/editor';
+import { ActionButtonPanel, NodeEditorPanel } from '@/modules/root/panels';
 import { useNodeRegistryStore } from '@/stores/nodeRegistryStore';
 import { NodeComponentProps } from '@/types/flowNode.types.ts';
 import {
@@ -162,19 +161,12 @@ const RootModule: React.FC = () => {
         <Panel position="top-left">
           <DnDPanel nodeTypes={nodeUiConfigs} onDragStart={onDragStart} />
         </Panel>
-        <Panel position="top-right">
-          {showNodeEditor && <NodeEditor templateType={selectedEditorTemplate} />}
-        </Panel>
-        <Panel position="top-right">
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onSave}>
-              save
-            </Button>
-            <Button variant="outline" onClick={onRestore}>
-              restore
-            </Button>
-          </div>
-        </Panel>
+
+        {showNodeEditor ? (
+          <NodeEditorPanel templateType={selectedEditorTemplate} />
+        ) : (
+          <ActionButtonPanel onSave={onSave} onRestore={onRestore} />
+        )}
       </ReactFlow>
     </div>
   );
