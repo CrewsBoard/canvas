@@ -47,7 +47,6 @@ export default function CrewAiAgentTemplate() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {/* Agent Role */}
         <FormField
           control={form.control}
           name="agentRole"
@@ -61,8 +60,6 @@ export default function CrewAiAgentTemplate() {
             </FormItem>
           )}
         />
-
-        {/* Agent Goal */}
         <FormField
           control={form.control}
           name="agentGoal"
@@ -76,8 +73,6 @@ export default function CrewAiAgentTemplate() {
             </FormItem>
           )}
         />
-
-        {/* Agent Backstory */}
         <FormField
           control={form.control}
           name="agentBackstory"
@@ -91,8 +86,6 @@ export default function CrewAiAgentTemplate() {
             </FormItem>
           )}
         />
-
-        {/* Agent Tools */}
         <FormField
           control={form.control}
           name="agentTools"
@@ -106,8 +99,6 @@ export default function CrewAiAgentTemplate() {
             </FormItem>
           )}
         />
-
-        {/* Max Iterations */}
         <FormField
           control={form.control}
           name="maxIterations"
@@ -121,8 +112,6 @@ export default function CrewAiAgentTemplate() {
             </FormItem>
           )}
         />
-
-        {/* Allow Delegation */}
         <FormField
           control={form.control}
           name="allowDelegation"
@@ -139,8 +128,6 @@ export default function CrewAiAgentTemplate() {
             </FormItem>
           )}
         />
-
-        {/* Model ID */}
         <FormField
           control={form.control}
           name="modelId"
