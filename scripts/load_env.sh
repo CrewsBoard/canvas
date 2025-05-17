@@ -2,11 +2,13 @@
 
 ENV=${1:-dev}
 
+echo "Generating environment variables for $ENV environment"
+
 yaml_to_env() {
     local prefix=$2
     local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
     sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" $1 |
+        -e "s|^\($s\)\($w\)$s:$s\([^#]*\).*$s\$|\1$fs\2$fs\3|p" $1 |
     awk -F$fs '{
         indent = length($1)/2;
         vname[indent] = $2;
@@ -15,7 +17,7 @@ yaml_to_env() {
             vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
             printf("%s%s%s=\"%s\"\n", "'$prefix'", vn, $2, $3);
         }
-    }'
+    }' | sed 's/^_//'
 }
 
 case $ENV in
@@ -34,7 +36,18 @@ case $ENV in
         ;;
 esac
 
-eval $(yaml_to_env $CONFIG_FILE)
+if [ ! -f $CONFIG_FILE ]; then
+    echo "Configuration file not found: $CONFIG_FILE"
+    exit 1
+fi
+
+echo "Loading environment variables from $CONFIG_FILE"
+
+while IFS= read -r line; do
+    if [[ $line =~ ^[a-zA-Z_][a-zA-Z0-9_]*= ]]; then
+        eval "$line"
+    fi
+done < <(yaml_to_env $CONFIG_FILE)
 
 export APP_NAME=$app_name
 export VITE_API_URL=$ui_vite_api_url
@@ -51,3 +64,5 @@ export MSG_BROKER_RABBITMQ_PORT=$msg_broker_rabbitmq_port
 export MSG_BROKER_RABBITMQ_UI_PORT=$msg_broker_rabbitmq_ui_port
 export MSG_BROKER_RABBITMQ_USERNAME=$msg_broker_rabbitmq_username
 export MSG_BROKER_RABBITMQ_PASSWORD=$msg_broker_flow_engine_node_msg_processor_password
+
+echo "All environment variables loaded successfully."

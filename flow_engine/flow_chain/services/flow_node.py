@@ -2,13 +2,15 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, List
 
 from crewai.tools import BaseTool
-from crewai_tools.tools.serper_dev_tool.serper_dev_tool import SerperDevTool, logger
+from crewai_tools.tools.serper_dev_tool.serper_dev_tool import SerperDevTool
 
 from flow_engine.flow_chain.dtos import NodeTypes, FlowNodeConfigs
 from flow_engine.flow_node.crewai_agent_node.tools.format_output_tool import (
     prepare_transform_node_input,
 )
+from shared.dtos.msg_broker import FlowEngineMsg, FlowEngineNodeProcessingData
 from shared.services.context_manager.context_manager_service import ContextManager
+from shared.utils.logger import logger
 
 
 class FlowNode(ABC, ContextManager):
@@ -21,6 +23,14 @@ class FlowNode(ABC, ContextManager):
         self.type = config.node_type
         self.configuration = config.configuration or {}
         self.connections = config.connections or []
+        self.current_message: Optional[FlowEngineMsg] = None
+
+    async def __call__(self, message: Optional[FlowEngineMsg] = None) -> None:
+        msg = None
+        self.current_message = message
+        if message:
+            msg = message.data.model_dump()
+        return await self.process(msg)
 
     @abstractmethod
     async def process(self, message: Optional[Dict[str, Any]] = None) -> None:
@@ -36,6 +46,12 @@ class FlowNode(ABC, ContextManager):
         """
         Find out the next connected node and append the node into event queue for processing.
         """
+        try:
+            message = FlowEngineNodeProcessingData.model_validate(message)
+        except Exception as e:
+            raise Exception(f"Error validating message: {e}")
+
+        next_msg = self.current_message.model_copy()
         node_id = node_id or self.id
         next_connection = next(
             (
@@ -61,28 +77,35 @@ class FlowNode(ABC, ContextManager):
                     f"{next_connection.from_node_type}({next_connection.from_node_id}) -> {next_connection.to_node_type}({next_connection.to_node_id}) connection is not supported"
                 )
                 return
-            if (
-                next_connection.to_node_id
-                not in self.flow_engine_service.flow_engine_event_factory.get(
-                    self.flow_chain_id
-                ).traversed_node
-            ):
-                self.flow_engine_service.flow_engine_event_factory.get(
-                    self.flow_chain_id
-                ).traversed_node.append(next_connection.to_node_id)
 
-            self.flow_engine_service.flow_engine_event_factory.get(
-                self.flow_chain_id
-            ).message[next_connection.to_node_id] = message
+            next_msg = FlowEngineMsg(
+                flow_chain_id=self.flow_chain_id,
+                node_id=next_connection.to_node_id,
+                start_node_id=self.current_message.start_node_id,
+                previous_node_id=self.id,
+                data=message,
+            )
+            next_msg.history = self.current_message.history.copy()
+            next_msg.history.append(
+                FlowEngineMsg.model_validate(
+                    self.current_message.model_dump(exclude={"history"})
+                )
+            )
 
-            self.flow_engine_service.event.set()
+            try:
+                await self.flow_engine_service.next(self.flow_chain_id, next_msg)
+            except Exception as e:
+                raise Exception(f"Error publishing message: {e}")
+
+            logger.info(f"Next message has been published for the execution")
+            logger.info(f"{next_msg}")
         else:
-            logger.warning(
-                f"{', '.join(self.flow_engine_service.flow_engine_event_factory.get(self.flow_chain_id).traversed_node)} completed"
-            )
-            logger.info(
-                f"Final message: {self.flow_engine_service.flow_engine_event_factory.get(self.flow_chain_id).message}"
-            )
+            traversed_node_directions = [
+                history.node_id for history in next_msg.history
+            ]
+            traversed_node_directions.append(next_msg.node_id)
+            logger.info("No next node found for the message.")
+            logger.info(f"Traversed nodes: {'-> '.join(traversed_node_directions)}")
 
     def validate_configuration(self) -> bool:
         """

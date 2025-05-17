@@ -1,20 +1,20 @@
 import importlib
-import json
 import os
 import uuid
 from typing import Dict, Any, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import UUID4
-from starlette.responses import StreamingResponse
 
 from core.controllers.base_controller import BaseController
-from core.dtos.flow_engine import FlowEngineEventFactory
+from core.dtos.flow_engine import (
+    FlowEngineExecuteParams,
+)
 from flow_engine.flow_chain.dtos import (
     NodeUiConfig,
     FlowChain,
-    NodeTypes,
 )
+from shared.dtos.msg_broker import FlowEngineMsg
 from shared.utils.funcs import get_root_path
 
 
@@ -42,7 +42,7 @@ class FlowEngineController(BaseController):
             response_model=List[FlowChain],
         )
         self.router.add_api_route(
-            "/flow-chain/{flow_chain_id}/execute",
+            "/flow-chain/execute",
             self.execute_flow_chain,
             methods=["POST"],
             response_model=Dict[str, Any],
@@ -75,7 +75,7 @@ class FlowEngineController(BaseController):
     ) -> Dict[str, Any]:
         try:
             flow_chain = FlowChain(
-                id=str(uuid.uuid4()),
+                id=uuid.uuid4(),
                 name=request.get("name", "Unnamed CrewAI Flow"),
                 description=request.get("description"),
                 nodes=request.get("nodes", []),
@@ -97,82 +97,24 @@ class FlowEngineController(BaseController):
     ) -> List[FlowChain]:
         return await self.flow_engine_service.read_flow_chains(flow_chain_id)
 
-    async def execute_flow_chain(self, flow_chain_id: UUID4, request: Dict[str, Any]):
+    async def execute_flow_chain(
+        self, flow_engine_execute_params: FlowEngineExecuteParams
+    ):
         try:
-            flow_chains = await self.flow_engine_service.read_flow_chains(flow_chain_id)
-            flow_chain = flow_chains[0]
-            if not flow_chain:
-                raise HTTPException(
-                    status_code=404, detail="CrewAI flow chain not found"
-                )
-            first_node_id = flow_chain.first_node_id
-            self.flow_engine_service.flow_engine_event_factory[
-                flow_chain_id
-            ] = FlowEngineEventFactory()
-            self.flow_engine_service.flow_engine_event_factory[
-                flow_chain_id
-            ].traversed_node.append(first_node_id)
-            flow_nodes = await self.flow_engine_service.get_flow_nodes(flow_chain)
-            total_tool_nodes = self.flow_engine_service.total_none_agent_node(
-                flow_chain_id
+            message = FlowEngineMsg(
+                flow_chain_id=flow_engine_execute_params.flow_chain_id,
+                data=flow_engine_execute_params.data,
+                node_id=flow_engine_execute_params.start_node_id,
+                start_node_id=flow_engine_execute_params.start_node_id,
             )
-
-            async def stream_data():
-                last_index = 0
-                user_msg = request
-                has_init = False
-                while True:
-                    if not has_init:
-                        self.flow_engine_service.event.set()
-                        has_init = True
-                    await self.flow_engine_service.event.wait()
-                    self.flow_engine_service.event.clear()
-
-                    while last_index <= total_tool_nodes - 1:
-                        traversed_node = (
-                            self.flow_engine_service.flow_engine_event_factory.get(
-                                flow_chain_id
-                            ).traversed_node
-                        )
-                        if len(traversed_node) == last_index:
-                            yield json.dumps(
-                                {
-                                    "flow_chain_id": str(flow_chain_id),
-                                    "message": "Flow chain completed",
-                                }
-                            ).encode("utf-8")
-                            return
-                        flow_node_id = traversed_node[last_index]
-                        all_msg = (
-                            self.flow_engine_service.flow_engine_event_factory.get(
-                                flow_chain_id
-                            ).message
-                        )
-                        node_msg = all_msg.get(flow_node_id) if all_msg else None
-                        message = node_msg if node_msg else user_msg
-
-                        flow_node = next(
-                            (
-                                flow_nodes[node_type][flow_node_id]
-                                for node_type in flow_nodes
-                                if node_type is not NodeTypes.AGENT
-                                and flow_nodes.get(node_type).get(flow_node_id)
-                                is not None
-                            ),
-                            None,
-                        )
-                        await flow_node.process(message)
-                        last_index += 1
-                        yield json.dumps(
-                            self.flow_engine_service.flow_engine_event_factory.get(
-                                flow_chain_id
-                            ).model_dump()
-                        ).encode("utf-8")
-                        if last_index == len(flow_chain.nodes) - 1:
-                            yield json.dumps(
-                                {"flow_chain_id": str(flow_chain_id), "result": message}
-                            ).encode("utf-8")
-
-            return StreamingResponse(stream_data(), media_type="text/event-stream")
+            is_executed = await self.flow_engine_service.next(
+                flow_chain_id=flow_engine_execute_params.flow_chain_id,
+                next_msg=message,
+            )
+            return {
+                "flow_chain_id": str(flow_engine_execute_params.flow_chain_id),
+                "message": "Flow chain executed successfully",
+                "result": is_executed,
+            }
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))

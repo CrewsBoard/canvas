@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import List, Optional, Dict, Any
 
 from crewai import Task, Crew
@@ -14,24 +15,53 @@ from flow_engine.flow_chain.services import FlowNodeRegistry
 from flow_engine.flow_chain.services.flow_node import FlowNode
 from flow_engine.flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import (
     CrewAIAgentNodeDTO,
-    CrewAiAgentNodeConfiguration,
 )
+from flow_engine.flow_node.crewai_crew_node.dtos.crewai_agent_response import (
+    CrewaiAgentResponse,
+)
+from shared.utils.logger import logger
 
 
 @FlowNodeRegistry.register("crewai_crew")
 class CrewAiCrewNode(FlowNode, BaseEventListener):
+    TASK_EXPECTED_OUTPUT = """Your final answer MUST be a JSON string formatted exactly as follows:
+    {
+      "output": "<Your full result or response from executing the task>",
+      "is_valid": <true if you believe you successfully completed the {} task based on your instructions, false if you were unable to complete the task or ran into limitations, uncertainty, unable to produce the expected answer or missing information>
+    }
+    Ensure no other text precedes or follows this JSON object.
+    """
+
     def __init__(self, config: FlowNodeConfigs):
         super().__init__(config)
         self.temp_removed_connections = []
+        self.pending_messages = []
+        self._process_task = None
+        self._is_crew_finished = False
+        self._condition_status_of_agent: Dict[str, bool] = {}
+
+    async def _process_pending_messages(self):
+        while True:
+            if self.pending_messages:
+                msg, role = self.pending_messages.pop(0)
+                await self.next(msg, role)
+            else:
+                if self._is_crew_finished:
+                    logger.info("Crew has finished processing all messages.")
+                    self._process_task = None
+                    self._condition_status_of_agent = {}
+                    break
+            await asyncio.sleep(0)
 
     async def _initialize_crew(self) -> None:
+        self._is_crew_finished = False
         flow_chain_data = await self.flow_engine_service.read_flow_chains(
             self.flow_chain_id
         )
         self.flow_chain = flow_chain_data[0]
         self.agents = [
-            agent_flow.agent
-            for agent_flow in self.flow_engine_service.flow_engine_agent_factory.get(
+            agent
+            for agent in self.flow_engine_service.flow_engine_agent_factory.get(
                 self.flow_chain_id
             )
         ]
@@ -44,27 +74,6 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
 
     async def _create_tasks_from_chain(self) -> List[Task]:
         tasks = []
-
-        for node in self.flow_chain.nodes:
-            if isinstance(node, CrewAIAgentNodeDTO):
-                node.configuration = CrewAiAgentNodeConfiguration.model_validate(
-                    node.configuration
-                )
-                agent = next(
-                    (
-                        agent
-                        for agent in self.agents
-                        if agent.role == node.configuration.role
-                    ),
-                    None,
-                )
-                if agent:
-                    task = Task(
-                        description=f"Process the input data and perform your role as {agent.role}",
-                        agent=agent,
-                        expected_output=f"Output from {agent.role} based on the input data",
-                    )
-                    tasks.append(task)
 
         for connection in self.flow_chain.connections:
             source_node = next(
@@ -105,17 +114,33 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
                 )
 
                 if source_agent and target_agent:
+                    task = Task(
+                        description=f"Perform the task of {source_agent.role} agent.",
+                        agent=source_agent,
+                        expected_output=f"{self.TASK_EXPECTED_OUTPUT.replace('{}', source_agent.role)}",
+                    )
+                    tasks.append(task)
                     if connection.condition:
                         task = Task(
-                            description=f"Only delegate to the poet if the {source_agent.role} response contains the exact string {connection.condition}. Otherwise, respond with a message explaining that poems can only be written about roses, apples, or doctors.",
+                            description=f"Only perform the task of {target_agent.role} agent if the {source_agent.role} agent's response contains the exact string {connection.condition}. Otherwise, respond with a message explaining that can not delegate.",
                             agent=target_agent,
-                            expected_output=f"Condition met for {target_agent.role}",
+                            expected_output=f"{self.TASK_EXPECTED_OUTPUT.replace('{}', target_agent.role)}",
+                        )
+                        tasks.append(task)
+                    else:
+                        task = Task(
+                            description=f"Perform the task of {target_agent.role} agent.",
+                            agent=target_agent,
+                            expected_output=f"{self.TASK_EXPECTED_OUTPUT.replace('{}', target_agent.role)}",
                         )
                         tasks.append(task)
 
         return tasks
 
     async def process(self, message: Optional[Dict[str, Any]] = None) -> None:
+        if self._process_task is None or self._process_task.done():
+            self._process_task = asyncio.create_task(self._process_pending_messages())
+
         await self._initialize_crew()
         await self.crew.kickoff_async(inputs=message)
 
@@ -131,15 +156,17 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
         def on_crew_completed(source, event):
             print(f"Crew '{event.crew_name}' has completed execution!")
             print(f"Output: {event.output}")
-            for conn in self.temp_removed_connections:
-                self.connections.append(conn)
-            # @todo decide what to do with the output
-            # asyncio.run(self.next({"message": event.output}))
+            self._is_crew_finished = True
 
         @crewai_event_bus.on(AgentExecutionCompletedEvent)
         def on_agent_execution_completed(source, event):
             print(f"Agent '{event.agent.role}' completed task")
             print(f"Output: {event.output}")
+            try:
+                output_dict = json.loads(event.output)
+                agent_output = CrewaiAgentResponse.model_validate(output_dict)
+            except json.JSONDecodeError:
+                raise Exception("Invalid JSON format in agent output")
             connected_agent = next(
                 (
                     conn
@@ -149,20 +176,18 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
                 ),
                 None,
             )
-            if connected_agent and event.output != connected_agent.condition:
-                connection_to_be_removed = next(
-                    (
-                        conn
-                        for conn in self.connections
-                        if conn.from_node_id == connected_agent.to_node_id
-                    ),
-                    None,
-                )
-                self.connections = [
-                    conn
-                    for conn in self.connections
-                    if conn.from_node_id != connection_to_be_removed.from_node_id
-                    and conn.to_node_id != connection_to_be_removed.to_node_id
-                ]
-                self.temp_removed_connections.append(connection_to_be_removed)
-            asyncio.run(self.next({"message": event.output}, event.agent.role))
+            if agent_output.is_valid:
+                if connected_agent:
+                    if connected_agent.from_node_id == event.agent.role:
+                        if agent_output.output == connected_agent.condition:
+                            self._condition_status_of_agent[
+                                connected_agent.to_node_id
+                            ] = True
+                        self.pending_messages.append(
+                            ({"message": agent_output.output}, event.agent.role)
+                        )
+                else:
+                    if self._condition_status_of_agent.get(event.agent.role, False):
+                        self.pending_messages.append(
+                            ({"message": agent_output.output}, event.agent.role)
+                        )
