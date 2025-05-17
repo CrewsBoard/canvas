@@ -1,4 +1,3 @@
-import asyncio
 from typing import Optional, Dict, Any, List
 
 from crewai import Agent, LLM
@@ -6,7 +5,6 @@ from crewai import Agent, LLM
 from core.dtos.entity.model_entity import ModelEntity
 from flow_engine.flow_chain.dtos import NodeConnection, NodeTypes, FlowNodeConfigs
 from flow_engine.flow_chain.services import FlowNodeRegistry
-from flow_engine.flow_chain.services.agent_flow import AgentFlow
 from flow_engine.flow_chain.services.flow_node import FlowNode
 from flow_engine.flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import (
     CrewAIAgentNodeDTO,
@@ -50,15 +48,12 @@ class CrewAiAgentNode(FlowNode):
             llm=await self.get_model(),
             max_iter=self.node_data.configuration.max_iterations or 25,
         )
-        output_event = asyncio.Event()
-        if not self.flow_engine_service.flow_engine_agent_factory:
+        if not self.flow_engine_service.flow_engine_agent_factory.get(
+            self.flow_chain_id, None
+        ):
             self.flow_engine_service.flow_engine_agent_factory[self.flow_chain_id] = []
         self.flow_engine_service.flow_engine_agent_factory[self.flow_chain_id].append(
-            AgentFlow(
-                agent=self.agent,
-                flow_chain_id=self.flow_chain_id,
-                output_event=output_event,
-            )
+            self.agent
         )
 
     async def process(self, message: Optional[Dict[str, Any]] = None) -> None:
