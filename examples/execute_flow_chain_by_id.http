@@ -1,0 +1,12 @@
+# @name execute_flow_chain
+POST /flow-chain/execute HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+
+{
+  "flow_chain_id": "{{flow_chain_id}}",
+  "start_node_id": "input_node",
+  "data": {
+    "message": "Please write a poem about the topic rose"
+  }
+}
