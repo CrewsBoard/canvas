@@ -43,6 +43,7 @@ class ContextManager:
             cls._msg_broker_service = await MessageBrokerService.get_instance()
 
             cls._flow_engine_service = FlowEngineService(
+                cls._msg_broker_service,
                 cls._caching_service,
             )
             cls._initialized = True
