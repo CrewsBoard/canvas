@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+. .venv/bin/activate
+pre-commit run commitlint --hook-stage commit-msg --commit-msg-filename "$1"
