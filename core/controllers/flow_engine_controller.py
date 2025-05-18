@@ -51,7 +51,6 @@ class FlowEngineController(BaseController):
     # @todo this should be connected to db
     @staticmethod
     async def get_node_types() -> List[NodeUiConfig]:
-        node_types = []
         root_path = get_root_path()
         flow_nodes_path = os.path.join(root_path, "flow_engine", "flow_node")
         node_ui_configs: List[NodeUiConfig] = []
@@ -59,9 +58,7 @@ class FlowEngineController(BaseController):
             if "ui_config.py" in files:
                 ui_config_path = os.path.join(root, "ui_config.py")
                 try:
-                    spec = importlib.util.spec_from_file_location(
-                        "ui_config", ui_config_path
-                    )
+                    spec = importlib.util.spec_from_file_location("ui_config", ui_config_path)
                     ui_config_module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(ui_config_module)
                     if hasattr(ui_config_module, "ui_config"):
@@ -70,9 +67,7 @@ class FlowEngineController(BaseController):
                     print(f"Error loading {ui_config_path}: {e}")
         return node_ui_configs
 
-    async def create_or_update_flow_chain(
-        self, request: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def create_or_update_flow_chain(self, request: Dict[str, Any]) -> Dict[str, Any]:
         try:
             flow_chain = FlowChain(
                 id=uuid.uuid4(),
@@ -92,14 +87,10 @@ class FlowEngineController(BaseController):
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    async def read_flow_chains(
-        self, flow_chain_id: Optional[UUID4] = None
-    ) -> List[FlowChain]:
+    async def read_flow_chains(self, flow_chain_id: Optional[UUID4] = None) -> List[FlowChain]:
         return await self.flow_engine_service.read_flow_chains(flow_chain_id)
 
-    async def execute_flow_chain(
-        self, flow_engine_execute_params: FlowEngineExecuteParams
-    ):
+    async def execute_flow_chain(self, flow_engine_execute_params: FlowEngineExecuteParams):
         try:
             message = FlowEngineMsg(
                 flow_chain_id=flow_engine_execute_params.flow_chain_id,

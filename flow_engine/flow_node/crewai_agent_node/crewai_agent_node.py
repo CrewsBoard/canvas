@@ -20,9 +20,7 @@ class CrewAiAgentNode(FlowNode):
             id=config.node_id,
             name=config.name,
             node_type=config.node_type,
-            configuration=CrewAiAgentNodeConfiguration.model_validate(
-                config.configuration
-            ),
+            configuration=CrewAiAgentNodeConfiguration.model_validate(config.configuration),
         )
         self.connections = config.connections
         self.agent: Optional[Agent] = None
@@ -48,13 +46,9 @@ class CrewAiAgentNode(FlowNode):
             llm=await self.get_model(),
             max_iter=self.node_data.configuration.max_iterations or 25,
         )
-        if not self.flow_engine_service.flow_engine_agent_factory.get(
-            self.flow_chain_id, None
-        ):
+        if not self.flow_engine_service.flow_engine_agent_factory.get(self.flow_chain_id, None):
             self.flow_engine_service.flow_engine_agent_factory[self.flow_chain_id] = []
-        self.flow_engine_service.flow_engine_agent_factory[self.flow_chain_id].append(
-            self.agent
-        )
+        self.flow_engine_service.flow_engine_agent_factory[self.flow_chain_id].append(self.agent)
 
     async def process(self, message: Optional[Dict[str, Any]] = None) -> None:
         await self._initialize_agent()
@@ -78,6 +72,4 @@ class CrewAiAgentNode(FlowNode):
             await self._initialize_agent()
 
     async def get_model(self) -> LLM:
-        return await self.model_service.build(
-            ModelEntity(self.node_data.configuration.model_id)
-        )
+        return await self.model_service.build(ModelEntity(self.node_data.configuration.model_id))

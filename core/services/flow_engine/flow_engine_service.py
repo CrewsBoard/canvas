@@ -45,12 +45,8 @@ class FlowEngineService:
             node = node_class(params)
             if not self.flow_engine_node_factory[flow_chain.id].get(params.node_type):
                 self.flow_engine_node_factory[flow_chain.id][params.node_type] = {}
-            self.flow_engine_node_factory[flow_chain.id][params.node_type][
-                params.node_id
-            ] = {}
-            self.flow_engine_node_factory[flow_chain.id][params.node_type][
-                params.node_id
-            ] = node
+            self.flow_engine_node_factory[flow_chain.id][params.node_type][params.node_id] = {}
+            self.flow_engine_node_factory[flow_chain.id][params.node_type][params.node_id] = node
             if params.node_type is NodeTypes.AGENT:
                 await node.process()
 
@@ -70,8 +66,7 @@ class FlowEngineService:
             (
                 flow_nodes[node_type][flow_node_id]
                 for node_type in flow_nodes
-                if node_type is not NodeTypes.AGENT
-                and flow_nodes.get(node_type).get(flow_node_id) is not None
+                if node_type is not NodeTypes.AGENT and flow_nodes.get(node_type).get(flow_node_id) is not None
             ),
             None,
         )
@@ -82,17 +77,11 @@ class FlowEngineService:
 
     async def next(self, flow_chain_id: UUID4, next_msg: FlowEngineMsg) -> bool:
         try:
-            key = self.UNIQUE_FLOW_CHAIN_IDENTIFIER_PLACEHOLDER.format(
-                str(flow_chain_id)
-            )
+            key = self.UNIQUE_FLOW_CHAIN_IDENTIFIER_PLACEHOLDER.format(str(flow_chain_id))
             has_subscription = await self.msg_broker_service.check_subscription(key)
             if not has_subscription:
-                await self.msg_broker_service.subscribe(
-                    key, self._flow_engine_event_handler
-                )
-            asyncio.create_task(
-                self.msg_broker_service.publish(key, next_msg.model_dump())
-            )
+                await self.msg_broker_service.subscribe(key, self._flow_engine_event_handler)
+            asyncio.create_task(self.msg_broker_service.publish(key, next_msg.model_dump()))
         except Exception as e:
             logger.error(f"Error publishing message: {e}")
             return False
@@ -105,9 +94,7 @@ class FlowEngineService:
         # @todo need to integrate save flow chain to db
         return await self._caching_service.set(key, flow_chain)
 
-    async def read_flow_chains(
-        self, flow_chain_id: Optional[UUID4] = None
-    ) -> List[FlowChain]:
+    async def read_flow_chains(self, flow_chain_id: Optional[UUID4] = None) -> List[FlowChain]:
         flow_chains = []
         if not flow_chain_id:
             key = self.UNIQUE_FLOW_CHAIN_IDENTIFIER_PLACEHOLDER.format("*")
@@ -140,9 +127,7 @@ class FlowEngineService:
 
     def get_agent_nodes(self, flow_chain_id: UUID4) -> List[Any]:
         agents = []
-        flow_nodes: Dict[NodeTypes, Dict[str, Any]] = self.flow_engine_node_factory.get(
-            str(flow_chain_id), {}
-        )
+        flow_nodes: Dict[NodeTypes, Dict[str, Any]] = self.flow_engine_node_factory.get(str(flow_chain_id), {})
         for node_type in flow_nodes:
             if node_type is NodeTypes.AGENT:
                 agents.extend([value for value in flow_nodes[node_type].values()])

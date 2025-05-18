@@ -55,16 +55,9 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
 
     async def _initialize_crew(self) -> None:
         self._is_crew_finished = False
-        flow_chain_data = await self.flow_engine_service.read_flow_chains(
-            self.flow_chain_id
-        )
+        flow_chain_data = await self.flow_engine_service.read_flow_chains(self.flow_chain_id)
         self.flow_chain = flow_chain_data[0]
-        self.agents = [
-            agent
-            for agent in self.flow_engine_service.flow_engine_agent_factory.get(
-                self.flow_chain_id
-            )
-        ]
+        self.agents = [agent for agent in self.flow_engine_service.flow_engine_agent_factory.get(self.flow_chain_id)]
         tasks = await self._create_tasks_from_chain()
         self.crew = Crew(
             agents=self.agents,
@@ -77,39 +70,21 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
 
         for connection in self.flow_chain.connections:
             source_node = next(
-                (
-                    node
-                    for node in self.flow_chain.nodes
-                    if node.id == connection.from_node_id
-                ),
+                (node for node in self.flow_chain.nodes if node.id == connection.from_node_id),
                 None,
             )
             target_node = next(
-                (
-                    node
-                    for node in self.flow_chain.nodes
-                    if node.id == connection.to_node_id
-                ),
+                (node for node in self.flow_chain.nodes if node.id == connection.to_node_id),
                 None,
             )
 
-            if isinstance(source_node, CrewAIAgentNodeDTO) and isinstance(
-                target_node, CrewAIAgentNodeDTO
-            ):
+            if isinstance(source_node, CrewAIAgentNodeDTO) and isinstance(target_node, CrewAIAgentNodeDTO):
                 source_agent = next(
-                    (
-                        agent
-                        for agent in self.agents
-                        if agent.role == source_node.configuration.role
-                    ),
+                    (agent for agent in self.agents if agent.role == source_node.configuration.role),
                     None,
                 )
                 target_agent = next(
-                    (
-                        agent
-                        for agent in self.agents
-                        if agent.role == target_node.configuration.role
-                    ),
+                    (agent for agent in self.agents if agent.role == target_node.configuration.role),
                     None,
                 )
 
@@ -171,8 +146,7 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
                 (
                     conn
                     for conn in self.connections
-                    if conn.from_node_id == event.agent.role
-                    and conn.to_node_type == NodeTypes.AGENT
+                    if conn.from_node_id == event.agent.role and conn.to_node_type == NodeTypes.AGENT
                 ),
                 None,
             )
@@ -180,14 +154,8 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
                 if connected_agent:
                     if connected_agent.from_node_id == event.agent.role:
                         if agent_output.output == connected_agent.condition:
-                            self._condition_status_of_agent[
-                                connected_agent.to_node_id
-                            ] = True
-                        self.pending_messages.append(
-                            ({"message": agent_output.output}, event.agent.role)
-                        )
+                            self._condition_status_of_agent[connected_agent.to_node_id] = True
+                        self.pending_messages.append(({"message": agent_output.output}, event.agent.role))
                 else:
                     if self._condition_status_of_agent.get(event.agent.role, False):
-                        self.pending_messages.append(
-                            ({"message": agent_output.output}, event.agent.role)
-                        )
+                        self.pending_messages.append(({"message": agent_output.output}, event.agent.role))

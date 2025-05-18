@@ -17,12 +17,8 @@ class RelationDao(BaseDao[RelationDto, RelationSchema], Generic[T]):
         self.dto = RelationDto
         self.schema = RelationSchema
 
-    async def related_entities(
-        self, entity: Entity, direction: RelationDirection, entity_class: Type[T]
-    ) -> List[T]:
-        data = await self.relation_repository.related_entities(
-            entity, direction, entity_class.entity_type
-        )
+    async def related_entities(self, entity: Entity, direction: RelationDirection, entity_class: Type[T]) -> List[T]:
+        data = await self.relation_repository.related_entities(entity, direction, entity_class.entity_type)
         entity_list: List[T] = []
         for item in data:
             if direction == RelationDirection.FROM:

@@ -23,9 +23,7 @@ class FlowNodeRegistry:
             logger.info("Initializing FlowNodeRegistry...")
             cls._load_all_plugins()
             cls._initialized = True
-            logger.info(
-                f"FlowNodeRegistry initialized with plugins: {list(cls._plugins.keys())}"
-            )
+            logger.info(f"FlowNodeRegistry initialized with plugins: {list(cls._plugins.keys())}")
 
     @classmethod
     def _load_all_plugins(cls) -> None:
@@ -43,11 +41,7 @@ class FlowNodeRegistry:
                 logger.info(f"Successfully imported module: {module_name}")
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
-                    if (
-                        isinstance(attr, type)
-                        and issubclass(attr, FlowNode)
-                        and attr_name.endswith("Node")
-                    ):
+                    if isinstance(attr, type) and issubclass(attr, FlowNode) and attr_name.endswith("Node"):
                         logger.info(f"Found Node class: {attr_name}")
                         if hasattr(attr, "_plugin_type"):
                             plugin_type = attr._plugin_type
@@ -64,9 +58,7 @@ class FlowNodeRegistry:
     @classmethod
     def register(cls, plugin_type: str):
         def decorator(plugin_class: Type[FlowNode]):
-            logger.info(
-                f"Registering plugin type: {plugin_type} for class: {plugin_class.__name__}"
-            )
+            logger.info(f"Registering plugin type: {plugin_type} for class: {plugin_class.__name__}")
             plugin_class._plugin_type = plugin_type
             return plugin_class
 

@@ -27,11 +27,7 @@ class AgentSchema(BaseSchema, table=True):
     code_execution_mode: str = Field(nullable=True)
     max_execution_time: Optional[int] = Field(nullable=True)
 
-    created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=func.now())
-    )
+    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now()))
     updated_at: datetime = Field(
-        sa_column=Column(
-            DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-        )
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     )

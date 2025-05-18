@@ -32,8 +32,6 @@ def create_app():
 
 
 if __name__ == "__main__":
-    server_config = uvicorn.Config(
-        app=create_app(), host="0.0.0.0", port=8001, reload=True
-    )
+    server_config = uvicorn.Config(app=create_app(), host="0.0.0.0", port=8001, reload=True)
     server = uvicorn.Server(server_config)
     server.run()

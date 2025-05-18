@@ -31,9 +31,7 @@ class AbstractMessageBroker(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def subscribe(
-        self, channel: str, callback: Callable[[Any], Awaitable[None]]
-    ) -> None:
+    async def subscribe(self, channel: str, callback: Callable[[Any], Awaitable[None]]) -> None:
         """Subscribe to a channel and register a callback."""
         raise NotImplementedError
 

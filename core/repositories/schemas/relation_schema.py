@@ -13,8 +13,4 @@ class RelationSchema(SQLModel, table=True):
     from_entity_type: EntityType = Field(nullable=False)
     to_entity_type: EntityType = Field(nullable=False)
 
-    __table_args__ = (
-        PrimaryKeyConstraint(
-            "from_entity_id", "from_entity_type", "to_entity_id", "to_entity_type"
-        ),
-    )
+    __table_args__ = (PrimaryKeyConstraint("from_entity_id", "from_entity_type", "to_entity_id", "to_entity_type"),)

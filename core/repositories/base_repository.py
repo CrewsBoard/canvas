@@ -22,9 +22,7 @@ class BaseRepository(Generic[SchemaType]):
         async with self.database_service.session() as session:
             return await session.get(self.schema, schema_id)
 
-    async def update(
-        self, schema_id: UUID4, schema_update: Dict[str, Any]
-    ) -> Optional[SchemaType]:
+    async def update(self, schema_id: UUID4, schema_update: Dict[str, Any]) -> Optional[SchemaType]:
         async with self.database_service.session() as session:
             schema = await session.get(self.schema, schema_id)
             if schema:

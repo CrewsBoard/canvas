@@ -31,36 +31,20 @@ class TaskService(BaseService[TaskDto, Task]):
 
     async def build(self, entity: TaskEntity):
         task_entity: TaskDto = await self.read(entity.id)
-        agent_entities: List[AgentEntity] = (
-            await self.relation_service.get_related_entities(
-                entity, RelationDirection.FROM, AgentEntity
-            )
+        agent_entities: List[AgentEntity] = await self.relation_service.get_related_entities(
+            entity, RelationDirection.FROM, AgentEntity
         )
-        agent = (
-            await self.agent_service.build(agent_entities[0])
-            if len(agent_entities) > 0
-            else None
-        )
-        prompt_entities = await self.relation_service.get_related_entities(
-            entity, RelationDirection.TO, PromptEntity
-        )
-        prompt_details: list[PromptDto] = await self.prompt_service.read_by_ids(
-            prompt_entities
-        )
+        agent = await self.agent_service.build(agent_entities[0]) if len(agent_entities) > 0 else None
+        prompt_entities = await self.relation_service.get_related_entities(entity, RelationDirection.TO, PromptEntity)
+        prompt_details: list[PromptDto] = await self.prompt_service.read_by_ids(prompt_entities)
         if len(prompt_details) != 2:
             raise Exception("Task must have exactly 2 prompts")
         return Task(
             name=task_entity.name,
-            description=[
-                prompt
-                for prompt in prompt_details
-                if prompt.type == PromptTypes.DESCRIPTION
-            ][0].value,
-            expected_output=[
-                prompt
-                for prompt in prompt_details
-                if prompt.type == PromptTypes.EXPECTED_OUTPUT
-            ][0].value,
+            description=[prompt for prompt in prompt_details if prompt.type == PromptTypes.DESCRIPTION][0].value,
+            expected_output=[prompt for prompt in prompt_details if prompt.type == PromptTypes.EXPECTED_OUTPUT][
+                0
+            ].value,
             agent=agent,
         )
 
@@ -77,16 +61,8 @@ class TaskService(BaseService[TaskDto, Task]):
 
     @staticmethod
     def _required_args(prompt_entities: list[PromptDto]) -> tuple[list[str], list[str]]:
-        descriptions = [
-            prompt.value
-            for prompt in prompt_entities
-            if prompt.type == PromptTypes.DESCRIPTION
-        ]
-        expected_outputs = [
-            prompt.value
-            for prompt in prompt_entities
-            if prompt.type == PromptTypes.EXPECTED_OUTPUT
-        ]
+        descriptions = [prompt.value for prompt in prompt_entities if prompt.type == PromptTypes.DESCRIPTION]
+        expected_outputs = [prompt.value for prompt in prompt_entities if prompt.type == PromptTypes.EXPECTED_OUTPUT]
         if len(descriptions) != len(expected_outputs):
             raise Exception("Descriptions and expected outputs must be the same length")
         return descriptions, expected_outputs

@@ -40,9 +40,7 @@ class FlowNode(ABC, ContextManager):
         """
         pass
 
-    async def next(
-        self, message: Dict[str, Any], node_id: Optional[str] = None
-    ) -> None:
+    async def next(self, message: Dict[str, Any], node_id: Optional[str] = None) -> None:
         """
         Find out the next connected node and append the node into event queue for processing.
         """
@@ -58,21 +56,14 @@ class FlowNode(ABC, ContextManager):
                 conn
                 for conn in self.connections
                 if conn.from_node_id == node_id
-                if not (
-                    conn.from_node_type == NodeTypes.AGENT
-                    and conn.to_node_type == NodeTypes.AGENT
-                )
+                if not (conn.from_node_type == NodeTypes.AGENT and conn.to_node_type == NodeTypes.AGENT)
             ),
             None,
         )
         if next_connection:
             if (
-                next_connection.to_node_type == NodeTypes.AGENT
-                and next_connection.from_node_type == NodeTypes.AGENT
-            ) or (
-                next_connection.from_node_type == NodeTypes.TOOL
-                and next_connection.to_node_type == NodeTypes.AGENT
-            ):
+                next_connection.to_node_type == NodeTypes.AGENT and next_connection.from_node_type == NodeTypes.AGENT
+            ) or (next_connection.from_node_type == NodeTypes.TOOL and next_connection.to_node_type == NodeTypes.AGENT):
                 logger.warning(
                     f"{next_connection.from_node_type}({next_connection.from_node_id}) -> {next_connection.to_node_type}({next_connection.to_node_id}) connection is not supported"
                 )
@@ -86,23 +77,17 @@ class FlowNode(ABC, ContextManager):
                 data=message,
             )
             next_msg.history = self.current_message.history.copy()
-            next_msg.history.append(
-                FlowEngineMsg.model_validate(
-                    self.current_message.model_dump(exclude={"history"})
-                )
-            )
+            next_msg.history.append(FlowEngineMsg.model_validate(self.current_message.model_dump(exclude={"history"})))
 
             try:
                 await self.flow_engine_service.next(self.flow_chain_id, next_msg)
             except Exception as e:
                 raise Exception(f"Error publishing message: {e}")
 
-            logger.info(f"Next message has been published for the execution")
+            logger.info("Next message has been published for the execution")
             logger.info(f"{next_msg}")
         else:
-            traversed_node_directions = [
-                history.node_id for history in next_msg.history
-            ]
+            traversed_node_directions = [history.node_id for history in next_msg.history]
             traversed_node_directions.append(next_msg.node_id)
             logger.info("No next node found for the message.")
             logger.info(f"Traversed nodes: {'-> '.join(traversed_node_directions)}")

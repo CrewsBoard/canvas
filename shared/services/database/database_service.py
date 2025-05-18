@@ -64,18 +64,13 @@ class DatabaseService(AbstractDatabaseService):
             schema_package_split = os.sep.join(schema_package.split("."))
             schema_package_path = os.path.join(get_root_path(), schema_package_split)
             if not os.path.exists(schema_package_path):
-                raise FileNotFoundError(
-                    f"Schema package path does not exist: {schema_package_path}"
-                )
+                raise FileNotFoundError(f"Schema package path does not exist: {schema_package_path}")
             schema_package_files = os.listdir(schema_package_path)
             schema_package_files = [
-                file
-                for file in schema_package_files
-                if file.endswith(".py") and file not in self._illegal_schema_files
+                file for file in schema_package_files if file.endswith(".py") and file not in self._illegal_schema_files
             ]
             schema_packages = [
-                ".".join([settings.database.schema_package, file.split(".")[0]])
-                for file in schema_package_files
+                ".".join([settings.database.schema_package, file.split(".")[0]]) for file in schema_package_files
             ]
 
             async def load_schemas():
@@ -100,9 +95,7 @@ class DatabaseService(AbstractDatabaseService):
             async with self._engine.begin() as conn:
                 await conn.run_sync(
                     SQLModel.metadata.create_all,
-                    tables=[
-                        table.__table__ for table in schemas if table is not SQLModel
-                    ],
+                    tables=[table.__table__ for table in schemas if table is not SQLModel],
                 )
             logger.info("Database schema created successfully.")
         except Exception as e:
