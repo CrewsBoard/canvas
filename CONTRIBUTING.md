@@ -129,4 +129,4 @@ By contributing, you agree that your contributions will be licensed under the pr
 
 ## 🙏 Questions?
 
-Feel free to open an issue if you have any questions about contributing! 
+Feel free to open an issue if you have any questions about contributing!
