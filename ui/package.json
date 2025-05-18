@@ -1,46 +1,61 @@
 {
-  "name": "ui",
-  "version": "0.1.0",
-  "private": true,
-  "description": "UI for the Canvas project - A modern FastAPI-based application for managing and orchestrating AI agents using CrewAI",
-  "author": "Rafsun Jany Arman <armanrafsunjany@gmail.com>",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/CrewsBoard/canvas.git"
-  },
-  "homepage": "https://github.com/CrewsBoard/canvas",
-  "bugs": {
-    "url": "https://github.com/CrewsBoard/canvas/issues"
-  },
-  "dependencies": {
-    "@tanstack/react-query": "^5.74.7",
-    "@xyflow/react": "^12.5.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^7.5.2",
-    "uuid": "^11.1.0",
-    "zustand": "^5.0.3"
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.2",
-    "@types/react": "^18.2.53",
-    "@types/react-dom": "^18.2.18",
-    "@types/uuid": "^10.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.20.0",
-    "@typescript-eslint/parser": "^6.20.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.56.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "prettier-plugin-organize-imports": "^4.1.0",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.12"
-  },
-  "scripts": {
-    "dev": "vite --port 3001",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
-  }
+    "name": "ui",
+    "version": "0.1.0",
+    "private": true,
+    "description": "UI for the Canvas project - A modern FastAPI-based application for managing and orchestrating AI agents using CrewAI",
+    "author": "Rafsun Jany Arman <armanrafsunjany@gmail.com>",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/CrewsBoard/canvas.git"
+    },
+    "homepage": "https://github.com/CrewsBoard/canvas",
+    "bugs": {
+        "url": "https://github.com/CrewsBoard/canvas/issues"
+    },
+    "dependencies": {
+        "@tanstack/react-query": "^5.74.7",
+        "@xyflow/react": "^12.5.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-router-dom": "^7.5.2",
+        "uuid": "^11.1.0",
+        "zustand": "^5.0.3"
+    },
+    "devDependencies": {
+        "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+        "@types/node": "^22.15.2",
+        "@types/react": "^18.2.53",
+        "@types/react-dom": "^18.2.18",
+        "@types/uuid": "^10.0.0",
+        "@typescript-eslint/eslint-plugin": "^6.20.0",
+        "@typescript-eslint/parser": "^6.20.0",
+        "@vitejs/plugin-react": "^4.2.1",
+        "eslint": "^8.56.0",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "eslint-plugin-react-refresh": "^0.4.5",
+        "husky": "^9.1.7",
+        "lint-staged": "^15.5.2",
+        "prettier": "^3.5.3",
+        "typescript": "^5.3.3",
+        "vite": "^5.0.12"
+    },
+    "scripts": {
+        "dev": "vite --port 3001",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "lint": "eslint --fix",
+        "format": "prettier --write .",
+        "precommit": "lint-staged",
+        "prepare": "husky"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": [
+            "prettier --write",
+            "eslint --fix"
+        ],
+        "*.{json,md,html,css,scss}": [
+            "prettier --write"
+        ]
+    }
 }
