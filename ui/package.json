@@ -46,6 +46,7 @@
         "build": "tsc && vite build",
         "preview": "vite preview",
         "lint": "eslint --fix",
+        "format": "prettier --write .",
         "precommit": "lint-staged",
         "prepare": "cd .. && husky"
     }
