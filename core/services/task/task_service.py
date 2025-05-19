@@ -6,12 +6,13 @@ from core.daos.task_dao import TaskDao
 from core.dtos.entity.agent_entity import AgentEntity
 from core.dtos.entity.prompt_entity import PromptEntity
 from core.dtos.entity.task_entity import TaskEntity
-from core.dtos.prompt import PromptDto, PromptTypes
+from core.dtos.prompt.prompt_dto import PromptDto
+from core.dtos.prompt.prompt_types import PromptTypes
 from core.dtos.relation.relation_direction import RelationDirection
-from core.dtos.task import TaskDto
-from core.repositories import TaskRepository
+from core.dtos.task.task_dto import TaskDto
+from core.repositories.task_repository import TaskRepository
 from core.services.agent.agent_service import AgentService
-from core.services.core import BaseService
+from core.services.core.base_service import BaseService
 from core.services.prompt.prompt_service import PromptService
 from core.services.relation.relation_service import RelationService
 
@@ -31,36 +32,20 @@ class TaskService(BaseService[TaskDto, Task]):
 
     async def build(self, entity: TaskEntity):
         task_entity: TaskDto = await self.read(entity.id)
-        agent_entities: List[AgentEntity] = (
-            await self.relation_service.get_related_entities(
-                entity, RelationDirection.FROM, AgentEntity
-            )
+        agent_entities: List[AgentEntity] = await self.relation_service.get_related_entities(
+            entity, RelationDirection.FROM, AgentEntity
         )
-        agent = (
-            await self.agent_service.build(agent_entities[0])
-            if len(agent_entities) > 0
-            else None
-        )
-        prompt_entities = await self.relation_service.get_related_entities(
-            entity, RelationDirection.TO, PromptEntity
-        )
-        prompt_details: list[PromptDto] = await self.prompt_service.read_by_ids(
-            prompt_entities
-        )
+        agent = await self.agent_service.build(agent_entities[0]) if len(agent_entities) > 0 else None
+        prompt_entities = await self.relation_service.get_related_entities(entity, RelationDirection.TO, PromptEntity)
+        prompt_details: list[PromptDto] = await self.prompt_service.read_by_ids(prompt_entities)
         if len(prompt_details) != 2:
             raise Exception("Task must have exactly 2 prompts")
         return Task(
             name=task_entity.name,
-            description=[
-                prompt
-                for prompt in prompt_details
-                if prompt.type == PromptTypes.DESCRIPTION
-            ][0].value,
-            expected_output=[
-                prompt
-                for prompt in prompt_details
-                if prompt.type == PromptTypes.EXPECTED_OUTPUT
-            ][0].value,
+            description=[prompt for prompt in prompt_details if prompt.type == PromptTypes.DESCRIPTION][0].value,
+            expected_output=[prompt for prompt in prompt_details if prompt.type == PromptTypes.EXPECTED_OUTPUT][
+                0
+            ].value,
             agent=agent,
         )
 
@@ -77,16 +62,8 @@ class TaskService(BaseService[TaskDto, Task]):
 
     @staticmethod
     def _required_args(prompt_entities: list[PromptDto]) -> tuple[list[str], list[str]]:
-        descriptions = [
-            prompt.value
-            for prompt in prompt_entities
-            if prompt.type == PromptTypes.DESCRIPTION
-        ]
-        expected_outputs = [
-            prompt.value
-            for prompt in prompt_entities
-            if prompt.type == PromptTypes.EXPECTED_OUTPUT
-        ]
+        descriptions = [prompt.value for prompt in prompt_entities if prompt.type == PromptTypes.DESCRIPTION]
+        expected_outputs = [prompt.value for prompt in prompt_entities if prompt.type == PromptTypes.EXPECTED_OUTPUT]
         if len(descriptions) != len(expected_outputs):
             raise Exception("Descriptions and expected outputs must be the same length")
         return descriptions, expected_outputs

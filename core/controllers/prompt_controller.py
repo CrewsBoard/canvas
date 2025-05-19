@@ -2,11 +2,11 @@ from fastapi import APIRouter
 from pydantic import UUID4
 
 from core.controllers.base_controller import BaseController
-from core.dtos.prompt import PromptDto
+from core.dtos.prompt.prompt_dto import PromptDto
 
 
 class PromptController(BaseController):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.router = APIRouter(tags=self.prompt_swagger_tags)
 
@@ -14,9 +14,7 @@ class PromptController(BaseController):
         self.router.add_api_route("/prompt/{prompt_id}", self.get, methods=["GET"])
         self.router.add_api_route("/prompt", self.create, methods=["POST"])
         self.router.add_api_route("/prompt/{prompt_id}", self.update, methods=["PUT"])
-        self.router.add_api_route(
-            "/prompt/{prompt_id}", self.delete, methods=["DELETE"]
-        )
+        self.router.add_api_route("/prompt/{prompt_id}", self.delete, methods=["DELETE"])
 
     async def read_all(self) -> list[PromptDto]:
         return await self.prompt_service.read_all()

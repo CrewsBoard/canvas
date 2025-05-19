@@ -1,8 +1,8 @@
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
-from .node_ui_config import NodeUiConfig
+from flow_engine.flow_chain.dtos.node_ui_config import NodeUiConfig
 
 
 class NodeRequest(BaseModel):

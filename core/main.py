@@ -5,11 +5,11 @@ from starlette.middleware.cors import CORSMiddleware
 from core.services.core.bootstrapper_service import BootstrapperService
 
 
-def create_app():
-    async def startup():
+def create_app() -> FastAPI:
+    async def startup() -> None:
         await BootstrapperService.start(app)
 
-    async def shutdown():
+    async def shutdown() -> None:
         await BootstrapperService.stop(app)
 
     app = FastAPI(
@@ -32,8 +32,6 @@ def create_app():
 
 
 if __name__ == "__main__":
-    server_config = uvicorn.Config(
-        app=create_app(), host="0.0.0.0", port=8001, reload=True
-    )
+    server_config = uvicorn.Config(app=create_app(), host="localhost", port=8001, reload=True)
     server = uvicorn.Server(server_config)
     server.run()

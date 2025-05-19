@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 from pydantic_settings import BaseSettings
 
-from core.dtos.settings import SettingsDto
+from core.dtos.settings.settings_dto import SettingsDto
 from shared.utils.funcs import get_project_name
 
 
@@ -19,7 +19,7 @@ class SettingsService(BaseSettings, SettingsDto):
         env_settings,
         dotenv_settings,
         file_secret_settings,
-    ):
+    ) -> tuple:
         return (
             cls.yaml_config_source(),
             env_settings,

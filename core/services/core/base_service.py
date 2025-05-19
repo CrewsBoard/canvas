@@ -1,4 +1,4 @@
-from typing import Optional, List, TypeVar, Generic
+from typing import Generic, List, Optional, TypeVar
 
 from pydantic import UUID4
 
@@ -9,7 +9,7 @@ T = TypeVar("T")
 
 
 class BaseService(Generic[DtoType, T]):
-    def __init__(self, dao):
+    def __init__(self, dao) -> None:
         self.dao = dao
 
     async def create(self, dto: DtoType) -> DtoType:

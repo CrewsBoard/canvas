@@ -4,6 +4,6 @@ from shared.services.database import database_service
 
 
 class CrewRepository(BaseRepository[CrewSchema]):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(database_service)
         self.schema = CrewSchema

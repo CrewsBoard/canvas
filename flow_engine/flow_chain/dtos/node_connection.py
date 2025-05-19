@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .node_types import NodeTypes
+from flow_engine.flow_chain.dtos.node_types import NodeTypes
 
 
 class NodeConnection(BaseModel):

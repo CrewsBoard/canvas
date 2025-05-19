@@ -1,11 +1,11 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from shared.dtos.others import UUIDEncoder
+from shared.dtos.others.uuid_serializer import UUIDEncoder
 
 
 class AbstractMessageBroker(ABC):
@@ -31,9 +31,7 @@ class AbstractMessageBroker(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def subscribe(
-        self, channel: str, callback: Callable[[Any], Awaitable[None]]
-    ) -> None:
+    async def subscribe(self, channel: str, callback: Callable[[Any], Awaitable[None]]) -> None:
         """Subscribe to a channel and register a callback."""
         raise NotImplementedError
 

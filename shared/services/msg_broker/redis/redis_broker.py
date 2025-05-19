@@ -1,8 +1,8 @@
-from typing import Any, Dict, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 import redis.asyncio as redis
 
-from shared.services.msg_broker import AbstractMessageBroker
+from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
 
 
 class RedisMessageBroker(AbstractMessageBroker):
@@ -56,16 +56,11 @@ class RedisMessageBroker(AbstractMessageBroker):
         if not self.redis:
             await self.connect()
         try:
-            return (
-                bool(await self.redis.pubsub().channels.get(channel))
-                and channel in self._callbacks
-            )
+            return bool(await self.redis.pubsub().channels.get(channel)) and channel in self._callbacks
         except redis.ConnectionError:
             return False
 
-    async def subscribe(
-        self, channel: str, callback: Callable[[Any], Awaitable[None]]
-    ) -> None:
+    async def subscribe(self, channel: str, callback: Callable[[Any], Awaitable[None]]) -> None:
         if not self.pubsub:
             await self.connect()
         self._callbacks[channel] = callback

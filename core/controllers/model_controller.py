@@ -2,11 +2,11 @@ from fastapi import APIRouter
 from pydantic import UUID4
 
 from core.controllers.base_controller import BaseController
-from core.dtos.model import ModelDto
+from core.dtos.model.model_dto import ModelDto
 
 
 class ModelController(BaseController):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.router = APIRouter(tags=self.model_swagger_tags)
 

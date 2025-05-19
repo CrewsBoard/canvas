@@ -5,8 +5,9 @@ from core.services.model.model_service import ModelService
 from core.services.prompt.prompt_service import PromptService
 from core.services.relation.relation_service import RelationService
 from core.services.task.task_service import TaskService
-from shared.dtos.msg_broker import MsgBrokerTypes
-from shared.services.msg_broker import MessageBrokerService, AbstractMessageBroker
+from shared.dtos.msg_broker.msg_broker_types import MsgBrokerTypes
+from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
+from shared.services.msg_broker.msg_broker_service import MessageBrokerService
 
 
 class ContextManager:
@@ -25,21 +26,13 @@ class ContextManager:
     async def initialize(cls):
         if not cls._initialized:
             cls._prompt_service = PromptService()
-            cls._agent_service = AgentService(
-                cls._relation_service, cls._model_service, cls._prompt_service
-            )
+            cls._agent_service = AgentService(cls._relation_service, cls._model_service, cls._prompt_service)
             cls._model_service = ModelService()
             cls._relation_service = RelationService()
-            cls._task_service = TaskService(
-                cls._agent_service, cls._relation_service, cls._prompt_service
-            )
-            cls._crew_service = CrewService(
-                cls._agent_service, cls._task_service, cls._relation_service
-            )
+            cls._task_service = TaskService(cls._agent_service, cls._relation_service, cls._prompt_service)
+            cls._crew_service = CrewService(cls._agent_service, cls._task_service, cls._relation_service)
 
-            cls._caching_service = await MessageBrokerService.get_instance(
-                MsgBrokerTypes.REDIS
-            )
+            cls._caching_service = await MessageBrokerService.get_instance(MsgBrokerTypes.REDIS)
             cls._msg_broker_service = await MessageBrokerService.get_instance()
 
             cls._flow_engine_service = FlowEngineService(

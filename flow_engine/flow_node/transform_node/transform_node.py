@@ -1,8 +1,8 @@
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from flow_engine.flow_chain.dtos import FlowNodeConfigs
-from flow_engine.flow_chain.services import FlowNodeRegistry
+from flow_engine.flow_chain.dtos.flow_node_configs import FlowNodeConfigs
 from flow_engine.flow_chain.services.flow_node import FlowNode
+from flow_engine.flow_chain.services.flow_node_registry_service import FlowNodeRegistry
 
 
 @FlowNodeRegistry.register("transform")
