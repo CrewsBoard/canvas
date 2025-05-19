@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, func, Column
+from sqlalchemy import Column, DateTime, func
 from sqlmodel import Field
 
 from core.repositories.schemas.base_schema import BaseSchema

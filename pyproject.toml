@@ -50,6 +50,33 @@ line-length = 120
 include = ['**/*.py']
 target-version = 'py311'
 
+[tool.ruff.lint]
+select = [
+    # Import rules
+    "TID252", # Relative imports
+    "F401", # Unused imports
+    "F403", # Star imports
+    "F405", # Import shadowed by loop variable
+    "E402", # Module level import not at top of file
+    "I001", # Unsorted imports
+
+    # Code style
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "B", # flake8-bugbear
+    "N", # pep8-naming
+
+    # @todo enable this after properly docstring the code
+    # Docstring
+    # "D",
+
+    # Security
+    "S",
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["core/tests"]

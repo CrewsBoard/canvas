@@ -1,6 +1,6 @@
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
 
-from shared.dtos.msg_broker import FlowEngineNodeProcessingData
+from shared.dtos.msg_broker.flow_engine import FlowEngineNodeProcessingData
 
 
 class FlowEngineExecuteParams(BaseModel):

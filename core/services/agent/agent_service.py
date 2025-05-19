@@ -1,17 +1,18 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from crewai import Agent
 from pydantic import validate_call
 
-from core.daos import AgentDao
-from core.dtos.agent import AgentDto
+from core.daos.agent_dao import AgentDao
+from core.dtos.agent.agent_dto import AgentDto
 from core.dtos.entity.agent_entity import AgentEntity
 from core.dtos.entity.model_entity import ModelEntity
 from core.dtos.entity.prompt_entity import PromptEntity
-from core.dtos.prompt import PromptDto, PromptTypes
+from core.dtos.prompt.prompt_dto import PromptDto
+from core.dtos.prompt.prompt_types import PromptTypes
 from core.dtos.relation.relation_direction import RelationDirection
-from core.repositories import AgentRepository
-from core.services.core import BaseService
+from core.repositories.agent_repository import AgentRepository
+from core.services.core.base_service import BaseService
 from core.services.model.model_service import ModelService
 from core.services.prompt.prompt_service import PromptService
 from core.services.relation.relation_service import RelationService
@@ -23,7 +24,7 @@ class AgentService(BaseService[AgentDto, Agent]):
         relation_service: RelationService,
         model_service: ModelService,
         prompt_service: PromptService,
-    ):
+    ) -> None:
         self.agent_dao = AgentDao(AgentRepository())
         self.relation_service = relation_service
         self.model_service = model_service
@@ -31,7 +32,7 @@ class AgentService(BaseService[AgentDto, Agent]):
         super().__init__(self.agent_dao)
 
     @validate_call
-    async def build(self, entity: AgentEntity):
+    async def build(self, entity: AgentEntity) -> Agent:
         llm = None
         agent_entity_details = await self.read(entity.id)
         if agent_entity_details is None:
@@ -52,7 +53,7 @@ class AgentService(BaseService[AgentDto, Agent]):
             verbose=agent_entity_details.verbose,
         )
 
-    async def build_all(self, entities: Optional[List[AgentEntity]]):
+    async def build_all(self, entities: Optional[List[AgentEntity]]) -> List[Agent]:
         if entities is None:
             agents_entities = [AgentEntity(agent.id) for agent in await self.read_all()]
         else:

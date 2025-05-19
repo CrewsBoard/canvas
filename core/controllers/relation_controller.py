@@ -2,11 +2,11 @@ from fastapi import APIRouter
 from pydantic import UUID4
 
 from core.controllers.base_controller import BaseController
-from core.dtos.relation import RelationDto
+from core.dtos.relation.relation_dto import RelationDto
 
 
 class RelationController(BaseController):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.router = APIRouter(tags=self.relation_swagger_tags)
 

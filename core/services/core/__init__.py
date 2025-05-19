@@ -1,4 +1,3 @@
-from .base_service import BaseService
-from .settings_service import SettingsService
+from core.services.core.settings_service import SettingsService
 
 settings = SettingsService()

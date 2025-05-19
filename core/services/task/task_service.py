@@ -6,12 +6,13 @@ from core.daos.task_dao import TaskDao
 from core.dtos.entity.agent_entity import AgentEntity
 from core.dtos.entity.prompt_entity import PromptEntity
 from core.dtos.entity.task_entity import TaskEntity
-from core.dtos.prompt import PromptDto, PromptTypes
+from core.dtos.prompt.prompt_dto import PromptDto
+from core.dtos.prompt.prompt_types import PromptTypes
 from core.dtos.relation.relation_direction import RelationDirection
-from core.dtos.task import TaskDto
-from core.repositories import TaskRepository
+from core.dtos.task.task_dto import TaskDto
+from core.repositories.task_repository import TaskRepository
 from core.services.agent.agent_service import AgentService
-from core.services.core import BaseService
+from core.services.core.base_service import BaseService
 from core.services.prompt.prompt_service import PromptService
 from core.services.relation.relation_service import RelationService
 

@@ -2,7 +2,7 @@ from pydantic import UUID4
 from sqlalchemy import PrimaryKeyConstraint
 from sqlmodel import Field, SQLModel
 
-from core.dtos.entity import EntityType
+from core.dtos.entity.entity_type import EntityType
 
 
 class RelationSchema(SQLModel, table=True):

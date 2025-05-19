@@ -1,11 +1,11 @@
-from typing import TypeVar, List, Generic, Type
+from typing import Generic, List, Type, TypeVar
 
-from core.daos import RelationDao
+from core.daos.relation_dao import RelationDao
 from core.dtos.entity.entity import Entity
-from core.dtos.relation import RelationDto
 from core.dtos.relation.relation_direction import RelationDirection
-from core.repositories import RelationRepository
-from core.services.core import BaseService
+from core.dtos.relation.relation_dto import RelationDto
+from core.repositories.relation_repository import RelationRepository
+from core.services.core.base_service import BaseService
 
 T = TypeVar("T", bound=Entity)
 

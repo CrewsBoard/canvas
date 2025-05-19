@@ -1,17 +1,17 @@
-from typing import TypeVar, Generic, List, Type
+from typing import Generic, List, Type, TypeVar
 
 from core.daos.base_dao import BaseDao
 from core.dtos.entity.entity import Entity
-from core.dtos.relation import RelationDto
 from core.dtos.relation.relation_direction import RelationDirection
-from core.repositories import RelationRepository
+from core.dtos.relation.relation_dto import RelationDto
+from core.repositories.relation_repository import RelationRepository
 from core.repositories.schemas.relation_schema import RelationSchema
 
 T = TypeVar("T", bound=Entity)
 
 
 class RelationDao(BaseDao[RelationDto, RelationSchema], Generic[T]):
-    def __init__(self, relation_repository: RelationRepository):
+    def __init__(self, relation_repository: RelationRepository) -> None:
         super().__init__(relation_repository)
         self.relation_repository = relation_repository
         self.dto = RelationDto

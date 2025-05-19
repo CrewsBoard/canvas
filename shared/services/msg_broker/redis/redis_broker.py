@@ -1,8 +1,8 @@
-from typing import Any, Dict, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 import redis.asyncio as redis
 
-from shared.services.msg_broker import AbstractMessageBroker
+from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
 
 
 class RedisMessageBroker(AbstractMessageBroker):

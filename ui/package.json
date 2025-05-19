@@ -23,6 +23,8 @@
         "zustand": "^5.0.3"
     },
     "devDependencies": {
+        "@commitlint/cli": "^19.8.1",
+        "@commitlint/config-conventional": "^19.8.1",
         "@trivago/prettier-plugin-sort-imports": "^5.2.2",
         "@types/node": "^22.15.2",
         "@types/react": "^18.2.53",

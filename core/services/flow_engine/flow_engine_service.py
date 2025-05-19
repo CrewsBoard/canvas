@@ -1,12 +1,14 @@
 import asyncio
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException
 from pydantic import UUID4
 
-from flow_engine.flow_chain.dtos import FlowChain, FlowNodeConfigs, NodeTypes
-from shared.dtos.msg_broker import FlowEngineMsg
-from shared.services.msg_broker import AbstractMessageBroker
+from flow_engine.flow_chain.dtos.flow_chain import FlowChain
+from flow_engine.flow_chain.dtos.flow_node_configs import FlowNodeConfigs
+from flow_engine.flow_chain.dtos.node_types import NodeTypes
+from shared.dtos.msg_broker.flow_engine import FlowEngineMsg
+from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
 from shared.utils.logger import logger
 
 
@@ -27,7 +29,7 @@ class FlowEngineService:
         self._caching_service = caching_service
 
     async def _create_flow_nodes(self, flow_chain: FlowChain) -> None:
-        from flow_engine.flow_chain.services import FlowNodeRegistry
+        from flow_engine.flow_chain.services.flow_node_registry_service import FlowNodeRegistry
 
         self.flow_engine_node_factory[flow_chain.id] = {}
         for node_request in flow_chain.nodes:

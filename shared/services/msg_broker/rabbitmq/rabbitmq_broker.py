@@ -1,9 +1,9 @@
-from typing import Any, Dict, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 import aio_pika
 
 from core.services.core import settings
-from shared.services.msg_broker import AbstractMessageBroker
+from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
 
 
 class RabbitMQMessageBroker(AbstractMessageBroker):

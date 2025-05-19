@@ -1,25 +1,21 @@
 import importlib
 import os
 import uuid
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import UUID4
 
 from core.controllers.base_controller import BaseController
-from core.dtos.flow_engine import (
-    FlowEngineExecuteParams,
-)
-from flow_engine.flow_chain.dtos import (
-    NodeUiConfig,
-    FlowChain,
-)
-from shared.dtos.msg_broker import FlowEngineMsg
+from core.dtos.flow_engine.flow_engine_execute_params import FlowEngineExecuteParams
+from flow_engine.flow_chain.dtos.flow_chain import FlowChain
+from flow_engine.flow_chain.dtos.node_ui_config import NodeUiConfig
+from shared.dtos.msg_broker.flow_engine import FlowEngineMsg
 from shared.utils.funcs import get_root_path
 
 
 class FlowEngineController(BaseController):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.router = APIRouter(tags=self.flow_engine_swagger_tags)
 
@@ -54,7 +50,7 @@ class FlowEngineController(BaseController):
         root_path = get_root_path()
         flow_nodes_path = os.path.join(root_path, "flow_engine", "flow_node")
         node_ui_configs: List[NodeUiConfig] = []
-        for root, dirs, files in os.walk(flow_nodes_path):
+        for root, _dirs, files in os.walk(flow_nodes_path):
             if "ui_config.py" in files:
                 ui_config_path = os.path.join(root, "ui_config.py")
                 try:
@@ -85,12 +81,12 @@ class FlowEngineController(BaseController):
                 "crew_created": True,
             }
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def read_flow_chains(self, flow_chain_id: Optional[UUID4] = None) -> List[FlowChain]:
         return await self.flow_engine_service.read_flow_chains(flow_chain_id)
 
-    async def execute_flow_chain(self, flow_engine_execute_params: FlowEngineExecuteParams):
+    async def execute_flow_chain(self, flow_engine_execute_params: FlowEngineExecuteParams) -> Dict[str, Any]:
         try:
             message = FlowEngineMsg(
                 flow_chain_id=flow_engine_execute_params.flow_chain_id,
@@ -108,4 +104,4 @@ class FlowEngineController(BaseController):
                 "result": is_executed,
             }
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e

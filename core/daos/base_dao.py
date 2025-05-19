@@ -1,6 +1,6 @@
-from typing import Optional, List, TypeVar, Generic, Type
+from typing import Generic, List, Optional, Type, TypeVar
 
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
 from sqlmodel import SQLModel
 
 DtoType = TypeVar("DtoType", bound=BaseModel)
@@ -8,7 +8,7 @@ SchemaType = TypeVar("SchemaType", bound=SQLModel)
 
 
 class BaseDao(Generic[DtoType, SchemaType]):
-    def __init__(self, repository):
+    def __init__(self, repository) -> None:
         self.repository = repository
         self.schema: Type[SchemaType]
         self.dto: Type[DtoType]

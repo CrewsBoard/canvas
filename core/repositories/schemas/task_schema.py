@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, func, Column
+from sqlalchemy import Column, DateTime, func
 from sqlmodel import Field
 
 from core.repositories.schemas.base_schema import BaseSchema

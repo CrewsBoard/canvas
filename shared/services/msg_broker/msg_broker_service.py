@@ -1,11 +1,11 @@
 from typing import Dict, Optional
 
 from core.services.core import settings
-from shared.dtos.msg_broker import MsgBrokerTypes
+from shared.dtos.msg_broker.msg_broker_types import MsgBrokerTypes
 from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
+from shared.services.msg_broker.rabbitmq.rabbitmq_broker import RabbitMQMessageBroker
+from shared.services.msg_broker.redis.redis_broker import RedisMessageBroker
 from shared.utils.logger import logger
-from .rabbitmq.rabbitmq_broker import RabbitMQMessageBroker
-from .redis.redis_broker import RedisMessageBroker
 
 
 class MessageBrokerService:

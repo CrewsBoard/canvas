@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
 from crewai.tools import BaseTool
 from crewai_tools.tools.serper_dev_tool.serper_dev_tool import SerperDevTool
 
-from flow_engine.flow_chain.dtos import NodeTypes, FlowNodeConfigs
+from flow_engine.flow_chain.dtos.flow_node_configs import FlowNodeConfigs
+from flow_engine.flow_chain.dtos.node_types import NodeTypes
 from flow_engine.flow_node.crewai_agent_node.tools.format_output_tool import (
     prepare_transform_node_input,
 )
-from shared.dtos.msg_broker import FlowEngineMsg, FlowEngineNodeProcessingData
+from shared.dtos.msg_broker.flow_engine import FlowEngineMsg, FlowEngineNodeProcessingData
 from shared.services.context_manager.context_manager_service import ContextManager
 from shared.utils.logger import logger
 
@@ -47,7 +48,7 @@ class FlowNode(ABC, ContextManager):
         try:
             message = FlowEngineNodeProcessingData.model_validate(message)
         except Exception as e:
-            raise Exception(f"Error validating message: {e}")
+            raise Exception(f"Error validating message: {e}") from e
 
         next_msg = self.current_message.model_copy()
         node_id = node_id or self.id
@@ -82,7 +83,7 @@ class FlowNode(ABC, ContextManager):
             try:
                 await self.flow_engine_service.next(self.flow_chain_id, next_msg)
             except Exception as e:
-                raise Exception(f"Error publishing message: {e}")
+                raise Exception(f"Error publishing message: {e}") from e
 
             logger.info("Next message has been published for the execution")
             logger.info(f"{next_msg}")

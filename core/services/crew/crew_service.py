@@ -3,15 +3,15 @@ from typing import List
 from crewai import Crew
 from crewai.crews import CrewOutput
 
-from core.daos import CrewDao
-from core.dtos.crew import CrewDto
+from core.daos.crew_dao import CrewDao
+from core.dtos.crew.crew_dto import CrewDto
 from core.dtos.entity.agent_entity import AgentEntity
 from core.dtos.entity.crew_entity import CrewEntity
 from core.dtos.entity.task_entity import TaskEntity
 from core.dtos.relation.relation_direction import RelationDirection
-from core.repositories import CrewRepository
+from core.repositories.crew_repository import CrewRepository
 from core.services.agent.agent_service import AgentService
-from core.services.core import BaseService
+from core.services.core.base_service import BaseService
 from core.services.relation.relation_service import RelationService
 from core.services.task.task_service import TaskService
 from shared.utils.logger import logger

@@ -1,10 +1,9 @@
 from typing import List, Optional
 
 from crewai.tools import BaseTool
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
 
 from flow_engine.flow_chain.dtos.node_types import NodeTypes
-
 
 # @todo check these dtos to refactor them all
 

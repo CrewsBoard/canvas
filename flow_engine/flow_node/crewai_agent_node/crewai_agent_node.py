@@ -1,14 +1,16 @@
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
-from crewai import Agent, LLM
+from crewai import LLM, Agent
 
 from core.dtos.entity.model_entity import ModelEntity
-from flow_engine.flow_chain.dtos import NodeConnection, NodeTypes, FlowNodeConfigs
-from flow_engine.flow_chain.services import FlowNodeRegistry
+from flow_engine.flow_chain.dtos.flow_node_configs import FlowNodeConfigs
+from flow_engine.flow_chain.dtos.node_connection import NodeConnection
+from flow_engine.flow_chain.dtos.node_types import NodeTypes
 from flow_engine.flow_chain.services.flow_node import FlowNode
+from flow_engine.flow_chain.services.flow_node_registry_service import FlowNodeRegistry
 from flow_engine.flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import (
-    CrewAIAgentNodeDTO,
     CrewAiAgentNodeConfiguration,
+    CrewAIAgentNodeDTO,
 )
 
 

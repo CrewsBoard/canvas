@@ -5,8 +5,9 @@ from core.services.model.model_service import ModelService
 from core.services.prompt.prompt_service import PromptService
 from core.services.relation.relation_service import RelationService
 from core.services.task.task_service import TaskService
-from shared.dtos.msg_broker import MsgBrokerTypes
-from shared.services.msg_broker import MessageBrokerService, AbstractMessageBroker
+from shared.dtos.msg_broker.msg_broker_types import MsgBrokerTypes
+from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
+from shared.services.msg_broker.msg_broker_service import MessageBrokerService
 
 
 class ContextManager:

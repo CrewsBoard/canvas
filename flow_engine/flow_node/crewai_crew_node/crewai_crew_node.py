@@ -1,18 +1,19 @@
 import asyncio
 import json
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
-from crewai import Task, Crew
+from crewai import Crew, Task
 from crewai.utilities.events import (
-    CrewKickoffStartedEvent,
-    CrewKickoffCompletedEvent,
     AgentExecutionCompletedEvent,
+    CrewKickoffCompletedEvent,
+    CrewKickoffStartedEvent,
 )
 from crewai.utilities.events.base_event_listener import BaseEventListener
 
-from flow_engine.flow_chain.dtos import NodeTypes, FlowNodeConfigs
-from flow_engine.flow_chain.services import FlowNodeRegistry
+from flow_engine.flow_chain.dtos.flow_node_configs import FlowNodeConfigs
+from flow_engine.flow_chain.dtos.node_types import NodeTypes
 from flow_engine.flow_chain.services.flow_node import FlowNode
+from flow_engine.flow_chain.services.flow_node_registry_service import FlowNodeRegistry
 from flow_engine.flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import (
     CrewAIAgentNodeDTO,
 )
@@ -141,7 +142,7 @@ class CrewAiCrewNode(FlowNode, BaseEventListener):
                 output_dict = json.loads(event.output)
                 agent_output = CrewaiAgentResponse.model_validate(output_dict)
             except json.JSONDecodeError:
-                raise Exception("Invalid JSON format in agent output")
+                raise Exception("Invalid JSON format in agent output") from event.output
             connected_agent = next(
                 (
                     conn

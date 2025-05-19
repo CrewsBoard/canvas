@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from typing import List
 
 from overrides import overrides
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
 
 from core.services.core import settings

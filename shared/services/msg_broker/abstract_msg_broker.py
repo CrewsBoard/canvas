@@ -1,11 +1,11 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from shared.dtos.others import UUIDEncoder
+from shared.dtos.others.uuid_serializer import UUIDEncoder
 
 
 class AbstractMessageBroker(ABC):

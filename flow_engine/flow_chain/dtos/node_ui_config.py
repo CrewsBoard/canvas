@@ -1,10 +1,10 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
 
-from .input_types import InputTypes
-from .node_types import NodeTypes
-from .output_types import OutputTypes
+from flow_engine.flow_chain.dtos.input_types import InputTypes
+from flow_engine.flow_chain.dtos.node_types import NodeTypes
+from flow_engine.flow_chain.dtos.output_types import OutputTypes
 
 
 class NodeUiFields(BaseModel):

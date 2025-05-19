@@ -1,4 +1,4 @@
-from typing import Optional, List, Type, TypeVar, Generic, Dict, Any
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
 from pydantic import UUID4
 from sqlmodel import SQLModel, select
@@ -7,7 +7,7 @@ SchemaType = TypeVar("SchemaType", bound=SQLModel)
 
 
 class BaseRepository(Generic[SchemaType]):
-    def __init__(self, database_service):
+    def __init__(self, database_service) -> None:
         self.database_service = database_service
         self.schema: Type[SchemaType]
 
