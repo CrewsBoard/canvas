@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         ## Documentation Issue or Suggestion
-        
+
         Thanks for helping us improve the Canvas documentation! Clear and comprehensive documentation makes a huge difference for all users.
 
   - type: checkboxes

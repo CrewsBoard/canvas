@@ -1,6 +1,6 @@
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
 
-from .entity_type import EntityType
+from core.dtos.entity.entity_type import EntityType
 
 
 class EntityId(BaseModel):

@@ -2,7 +2,7 @@ from shared.services.context_manager.context_manager_service import ContextManag
 
 
 class BaseController(ContextManager):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.prompt_swagger_tags = ["Prompt"]

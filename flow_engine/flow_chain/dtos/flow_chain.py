@@ -1,16 +1,13 @@
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import UUID4, BaseModel
 
-from .node_connection import NodeConnection
-from ...flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import (
-    ToolNodeDto,
-    CrewAIAgentNodeDTO,
-)
+from flow_engine.flow_chain.dtos.node_connection import NodeConnection
+from flow_engine.flow_node.crewai_agent_node.dtos.crewai_agent_node_dto import CrewAIAgentNodeDTO, ToolNodeDto
 
 
 class FlowChain(BaseModel):
-    id: str
+    id: UUID4
     name: str
     description: str
     nodes: List[ToolNodeDto | CrewAIAgentNodeDTO]

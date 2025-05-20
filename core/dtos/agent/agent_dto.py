@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import UUID4
 
 from core.dtos.agent.code_execution_modes import CodeExecutionModes
-from core.dtos.base import BaseDto
+from core.dtos.base.base_dto import BaseDto
 
 
 class AgentDto(BaseDto):

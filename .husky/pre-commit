@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+if [ -d ".venv" ]; then
+  . .venv/bin/activate
+  pre-commit run --hook-stage pre-commit
+fi
+
+# Run lint-staged for UI files
+if [ -d "ui" ]; then
+  cd ui
+  if [ -f "node_modules/.bin/lint-staged" ]; then
+    npx lint-staged
+  else
+    echo "Warning: lint-staged not found in ui directory"
+  fi
+  cd ..
+fi

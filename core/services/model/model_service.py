@@ -1,11 +1,11 @@
 from crewai import LLM
 from pydantic import validate_call
 
-from core.daos import ModelDao
+from core.daos.model_dao import ModelDao
 from core.dtos.entity.model_entity import ModelEntity
-from core.dtos.model import ModelDto
-from core.repositories import ModelRepository
-from core.services.core import BaseService
+from core.dtos.model.model_dto import ModelDto
+from core.repositories.model_repository import ModelRepository
+from core.services.core.base_service import BaseService
 
 
 class ModelService(BaseService[ModelDto, LLM]):

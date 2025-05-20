@@ -1,9 +1,9 @@
-from typing import Any, Dict, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 import aio_pika
 
 from core.services.core import settings
-from shared.services.msg_broker import AbstractMessageBroker
+from shared.services.msg_broker.abstract_msg_broker import AbstractMessageBroker
 
 
 class RabbitMQMessageBroker(AbstractMessageBroker):
@@ -38,7 +38,7 @@ class RabbitMQMessageBroker(AbstractMessageBroker):
         if self.connection:
             await self.connection.close()
 
-    async def publish(self, channel: str, message: Any) -> bool:
+    async def publish(self, channel: str, message: Dict[str, Any]) -> bool:
         if not self.connection:
             await self.connect()
 
@@ -50,9 +50,16 @@ class RabbitMQMessageBroker(AbstractMessageBroker):
         await self.exchange.publish(message, routing_key=channel)
         return True
 
-    async def subscribe(
-        self, channel: str, callback: Callable[[Any], Awaitable[None]]
-    ) -> None:
+    async def check_subscription(self, channel: str) -> bool:
+        if not self.connection:
+            await self.connect()
+
+        try:
+            return bool(await self.channel.get_queue(channel)) and channel in self._callbacks
+        except aio_pika.exceptions.ChannelClosed:
+            return False
+
+    async def subscribe(self, channel: str, callback: Callable[[Any], Awaitable[None]]) -> None:
         if not self.connection:
             await self.connect()
 

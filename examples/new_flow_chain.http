@@ -1,0 +1,152 @@
+# @name create_flow_chain
+POST /flow-chain HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+
+{
+  "name": "Poetry Validation Flow",
+  "description": "Flow that validates poem requests and only delivers poems for approved categories",
+  "first_node_id": "input_node",
+  "debug_mode": true,
+  "nodes": [
+    {
+      "id": "input_node",
+      "name": "Input Node",
+      "node_type": "tool",
+      "configuration": {},
+      "node_template_id": "input"
+    },
+    {
+      "id": "crew_node",
+      "name": "Crew Node",
+      "node_type": "crew",
+      "configuration": {},
+      "node_template_id": "crewai_crew"
+    },
+    {
+      "id": "topic_matcher",
+      "name": "Request Validator",
+      "node_type": "agent",
+      "configuration": {
+        "role": "topic_matcher",
+        "goal": "Match topics against an exact whitelist and return a binary decision.",
+        "backstory": "You are a simple word-matching algorithm, not an AI. Your ONLY function is to check if the main noun in the {message} matches one of these exact words: 'rose', 'apple', 'doctor'. Follow these exact steps:\n1. Extract the main noun from the input\n2. Convert it to lowercase and singular form\n3. Check if it is EXACTLY 'rose' OR 'apple' OR 'doctor'\n4. If yes, output ONLY the text: 'TRUE'\n5. If no, output ONLY the text: 'FALSE'\n\nYou must follow these steps mechanically with NO deviations. NO other words are permitted in your response.",
+        "max_iterations": 1,
+        "tools": [],
+        "model_id": "f0d98f8b-96b4-44c1-8975-76e685d5f42b"
+      },
+      "node_template_id": "crewai_agent"
+    },
+    {
+      "id": "poet_agent",
+      "name": "Specialized Poet",
+      "node_type": "agent",
+      "configuration": {
+        "role": "poet_agent",
+        "goal": "Compose a beautiful and meaningful poem about the approved subject.",
+        "backstory": "You are a gifted poet specialized in writing poems about roses, apples, and doctors. You create elegant verses that capture the essence of these specific topics.",
+        "tools": [],
+        "model_id": "f0d98f8b-96b4-44c1-8975-76e685d5f42b"
+      },
+      "node_template_id": "crewai_agent"
+    },
+    {
+      "id": "transform_validator",
+      "name": "Transform Validator Output",
+      "node_type": "tool",
+      "configuration": {
+        "transformations": {
+          "message": "reverse"
+        }
+      },
+      "node_template_id": "transform"
+    },
+    {
+      "id": "transform_poet",
+      "name": "Transform Poet Output",
+      "node_type": "tool",
+      "configuration": {
+        "transformations": {
+          "message": "uppercase"
+        }
+      },
+      "node_template_id": "transform"
+    },
+    {
+      "id": "output_validator",
+      "name": "Validator Output",
+      "node_type": "tool",
+      "configuration": {},
+      "node_template_id": "output"
+    },
+    {
+      "id": "output_poet",
+      "name": "Poet Output",
+      "node_type": "tool",
+      "configuration": {},
+      "node_template_id": "output"
+    },
+    {
+      "id": "output_crew",
+      "name": "Crew Output",
+      "node_type": "tool",
+      "configuration": {},
+      "node_template_id": "output"
+    }
+  ],
+  "connections": [
+    {
+      "from_node_id": "input_node",
+      "to_node_id": "crew_node",
+      "from_node_type": "tool",
+      "to_node_type": "crew"
+    },
+    {
+      "from_node_id": "crew_node",
+      "to_node_id": "output_crew",
+      "from_node_type": "crew",
+      "to_node_type": "tool"
+    },
+    {
+      "from_node_id": "topic_matcher",
+      "to_node_id": "poet_agent",
+      "from_node_type": "agent",
+      "to_node_type": "agent",
+      "condition": "TRUE"
+    },
+    {
+      "from_node_id": "topic_matcher",
+      "to_node_id": "transform_validator",
+      "from_node_type": "agent",
+      "to_node_type": "tool"
+    },
+    {
+      "from_node_id": "poet_agent",
+      "to_node_id": "transform_poet",
+      "from_node_type": "agent",
+      "to_node_type": "tool"
+    },
+    {
+      "from_node_id": "transform_validator",
+      "to_node_id": "output_validator",
+      "from_node_type": "tool",
+      "to_node_type": "tool"
+    },
+    {
+      "from_node_id": "transform_poet",
+      "to_node_id": "output_poet",
+      "from_node_type": "tool",
+      "to_node_type": "tool"
+    }
+  ]
+}
+
+> {%
+
+
+
+ client.global.set("flow_chain_id", response.body.flow_chain_id);
+
+
+
+%}

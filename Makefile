@@ -1,35 +1,38 @@
 .PHONY: dev up down build rebuild logs clean test stage prod help
 
 dev:
-	@source scripts/load_env.sh dev && docker compose up
+	@bash -c 'source scripts/load_env.sh dev && docker compose up'
 
 up:
-	@source scripts/load_env.sh dev && docker compose up -d
+	@bash -c 'source scripts/load_env.sh dev && docker compose up -d'
 
 down:
-	@source scripts/load_env.sh dev && docker compose down
+	@bash -c 'source scripts/load_env.sh dev && docker compose down'
 
 build:
-	@source scripts/load_env.sh dev && docker compose build
+	@bash -c 'source scripts/load_env.sh dev && docker compose build'
 
 rebuild:
-	@source scripts/load_env.sh dev && docker compose build --no-cache
+	@bash -c 'source scripts/load_env.sh dev && docker compose build --no-cache'
 
 logs:
-	@source scripts/load_env.sh dev && docker compose logs -f
+	@bash -c 'source scripts/load_env.sh dev && docker compose logs -f'
 
 clean:
-	@source scripts/load_env.sh dev && docker compose down -v
+	@bash -c 'source scripts/load_env.sh dev && docker compose down -v'
 	@docker system prune -f
 
 test:
-	@source scripts/load_env.sh dev && docker compose run --rm core pytest core/ flow_engine/
+	@bash -c 'source scripts/load_env.sh dev && docker compose run --rm core pytest core/ flow_engine/'
 
 stage:
-	@source scripts/load_env.sh stage && docker compose up -d
+	@bash -c 'source scripts/load_env.sh stage && docker compose up -d'
 
 prod:
-	@source scripts/load_env.sh prod && docker compose up -d
+	@bash -c 'source scripts/load_env.sh prod && docker compose up -d'
+
+env_test:
+	@bash -c 'source scripts/load_env.sh dev'
 
 help:
 	@echo "Available commands:"
@@ -44,3 +47,4 @@ help:
 	@echo "  make lint     - Run linter (core, shared, and flow_engine)"
 	@echo "  make stage    - Start stage environment"
 	@echo "  make prod     - Start production environment"
+	@echo "  make env-test - Load environment variables for testing"

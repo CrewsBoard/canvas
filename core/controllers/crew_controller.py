@@ -2,12 +2,12 @@ from fastapi import APIRouter
 from pydantic import UUID4
 
 from core.controllers.base_controller import BaseController
-from core.dtos.crew import CrewDto
+from core.dtos.crew.crew_dto import CrewDto
 from core.dtos.entity.crew_entity import CrewEntity
 
 
 class CrewController(BaseController):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.router = APIRouter(tags=self.crew_swagger_tags)
 

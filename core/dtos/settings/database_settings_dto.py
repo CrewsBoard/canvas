@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from shared.dtos.database import DatabaseTypes
+from shared.dtos.database.database_types import DatabaseTypes
 
 
 class DatabaseSettingsDto(BaseModel):

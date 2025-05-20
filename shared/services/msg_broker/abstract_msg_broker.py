@@ -1,8 +1,11 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
+from uuid import UUID
 
 from pydantic import BaseModel
+
+from shared.dtos.others.uuid_serializer import UUIDEncoder
 
 
 class AbstractMessageBroker(ABC):
@@ -19,14 +22,16 @@ class AbstractMessageBroker(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def publish(self, channel: str, message: Any) -> bool:
+    async def publish(self, channel: str, message: Dict[str, Any]) -> bool:
         """Publish a message to a channel."""
         raise NotImplementedError
 
+    async def check_subscription(self, channel: str) -> bool:
+        """Check if a subscription exists for a channel."""
+        raise NotImplementedError
+
     @abstractmethod
-    async def subscribe(
-        self, channel: str, callback: Callable[[Any], Awaitable[None]]
-    ) -> None:
+    async def subscribe(self, channel: str, callback: Callable[[Any], Awaitable[None]]) -> None:
         """Subscribe to a channel and register a callback."""
         raise NotImplementedError
 
@@ -63,11 +68,13 @@ class AbstractMessageBroker(ABC):
     @staticmethod
     def serialize(value: Any) -> str:
         """Serialize a value to a string."""
+        if isinstance(value, UUID):
+            return str(value)
         if isinstance(value, str):
             return value
         if isinstance(value, BaseModel):
             return value.model_dump_json()
-        return json.dumps(value)
+        return json.dumps(value, cls=UUIDEncoder)
 
     @staticmethod
     def deserialize(value: str) -> Any:

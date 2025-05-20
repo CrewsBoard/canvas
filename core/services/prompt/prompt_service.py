@@ -1,7 +1,7 @@
-from core.daos import PromptDao
-from core.dtos.prompt import PromptDto
-from core.repositories import PromptRepository
-from core.services.core import BaseService
+from core.daos.prompt_dao import PromptDao
+from core.dtos.prompt.prompt_dto import PromptDto
+from core.repositories.prompt_repository import PromptRepository
+from core.services.core.base_service import BaseService
 
 
 class PromptService(BaseService[PromptDto, None]):

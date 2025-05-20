@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+if [ -d ".venv" ]; then
+  . .venv/bin/activate
+  pre-commit run commitlint --hook-stage commit-msg --commit-msg-filename "$1"
+fi
+
+if [ ! -d ".venv" ]; then
+  cd ui && npx --no-install commitlint --edit "$1"
+fi

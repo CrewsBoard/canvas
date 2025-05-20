@@ -1,7 +1,7 @@
 from aio_pika import ExchangeType
 from pydantic import BaseModel
 
-from shared.dtos.msg_broker import MsgBrokerTypes
+from shared.dtos.msg_broker.msg_broker_types import MsgBrokerTypes
 
 
 class RedisSettingsDto(BaseModel):

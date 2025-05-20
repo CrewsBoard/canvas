@@ -1,6 +1,6 @@
 from typing import Optional
 
-from core.dtos.base import BaseDto
+from core.dtos.base.base_dto import BaseDto
 from core.dtos.model.model_types import ModelTypes
 
 

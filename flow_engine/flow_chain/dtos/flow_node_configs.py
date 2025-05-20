@@ -1,9 +1,9 @@
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
 
-from .node_connection import NodeConnection
-from .node_types import NodeTypes
+from flow_engine.flow_chain.dtos.node_connection import NodeConnection
+from flow_engine.flow_chain.dtos.node_types import NodeTypes
 
 
 class FlowNodeConfigs(BaseModel):
