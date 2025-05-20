@@ -1,3 +1,3 @@
 interface ImportMeta {
-  readonly glob: (path: string) => Record<string, () => Promise<unknown>>;
+    readonly glob: (path: string) => Record<string, () => Promise<unknown>>;
 }

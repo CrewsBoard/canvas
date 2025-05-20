@@ -1,15 +1,16 @@
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+
+import RoutesProvider from '@/Routes.tsx';
 import BootstrapperProvider from '@/libs/providers/BootstrapperProvider';
-import RoutesProvider from "@/Routes.tsx";
 import QueryProvider from '@/libs/providers/QueryProvider';
-import {BrowserRouter} from 'react-router-dom';
 
 const App: React.FC = () => {
     return (
         <BrowserRouter>
             <QueryProvider>
                 <BootstrapperProvider>
-                    <RoutesProvider/>
+                    <RoutesProvider />
                 </BootstrapperProvider>
             </QueryProvider>
         </BrowserRouter>

@@ -1,25 +1,23 @@
-import React, { createContext, ReactNode, useState } from 'react';
+import React, { ReactNode, createContext, useState } from 'react';
 
 export interface DnDContextType {
-  draggedType: string | null;
-  setDraggedType: React.Dispatch<React.SetStateAction<string | null>>;
+    draggedType: string | null;
+    setDraggedType: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const defaultContextValue: DnDContextType = {
-  draggedType: null,
-  setDraggedType: () => {}, // No-op function as default
+    draggedType: null,
+    setDraggedType: () => {}, // No-op function as default
 };
 
 export const DnDContext = createContext<DnDContextType>(defaultContextValue);
 
 interface DnDProviderProps {
-  children: ReactNode;
+    children: ReactNode;
 }
 
 export const DnDProvider = ({ children }: DnDProviderProps) => {
-  const [draggedType, setDraggedType] = useState<string | null>(null);
+    const [draggedType, setDraggedType] = useState<string | null>(null);
 
-  return (
-    <DnDContext.Provider value={{ draggedType, setDraggedType }}>{children}</DnDContext.Provider>
-  );
+    return <DnDContext.Provider value={{ draggedType, setDraggedType }}>{children}</DnDContext.Provider>;
 };

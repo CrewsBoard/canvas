@@ -1,175 +1,171 @@
-import DnDPanel from '@/modules/root/dndPanel';
-import { ActionButtonPanel, NodeEditorPanel } from '@/modules/root/panels';
-import { useNodeRegistryStore } from '@/stores/nodeRegistryStore';
-import { NodeComponentProps } from '@/types/flowNode.types.ts';
 import {
-  addEdge,
-  Background,
-  Controls,
-  Edge,
-  MarkerType,
-  MiniMap,
-  Node,
-  Panel,
-  ReactFlow,
-  useEdgesState,
-  useNodesState,
-  useReactFlow,
-  type OnConnect,
+    Background,
+    Controls,
+    Edge,
+    MarkerType,
+    MiniMap,
+    Node,
+    type OnConnect,
+    Panel,
+    ReactFlow,
+    addEdge,
+    useEdgesState,
+    useNodesState,
+    useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import DnDPanel from '@/modules/root/dndPanel';
+import { ActionButtonPanel, NodeEditorPanel } from '@/modules/root/panels';
+import { useNodeRegistryStore } from '@/stores/nodeRegistryStore';
+import { NodeComponentProps } from '@/types/flowNode.types.ts';
+
 const defaultEdgeOptions = {
-  type: 'default',
-  animated: true,
-  markerEnd: { type: MarkerType.ArrowClosed },
+    type: 'default',
+    animated: true,
+    markerEnd: { type: MarkerType.ArrowClosed },
 };
 
 const flowKey = 'crews-flow';
 
 const RootModule: React.FC = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
-  const { setViewport, toObject } = useReactFlow();
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+    const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
+    const { setViewport, toObject } = useReactFlow();
 
-  const [showNodeEditor, setShowNodeEditor] = useState(false);
-  const [selectedEditorTemplate, setSelectedEditorTemplate] = useState<string>('');
+    const [showNodeEditor, setShowNodeEditor] = useState(false);
+    const [selectedEditorTemplate, setSelectedEditorTemplate] = useState<string>('');
 
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+    const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
-  const onDragStart = useCallback(
-    (event: React.DragEvent, nodeType: string, templateType: string) => {
-      event.dataTransfer.setData('application/reactflow/node', nodeType);
-      event.dataTransfer.setData('application/reactflow/template', templateType);
-      event.dataTransfer.effectAllowed = 'move';
-    },
-    []
-  );
+    const onDragStart = useCallback((event: React.DragEvent, nodeType: string, templateType: string) => {
+        event.dataTransfer.setData('application/reactflow/node', nodeType);
+        event.dataTransfer.setData('application/reactflow/template', templateType);
+        event.dataTransfer.effectAllowed = 'move';
+    }, []);
 
-  const toggleNodeEditor = useCallback(
-    (templateType: string) => {
-      if (selectedEditorTemplate !== templateType) {
-        setSelectedEditorTemplate(templateType);
-      }
-      setShowNodeEditor(show => !show);
-    },
-    [selectedEditorTemplate]
-  );
-
-  const onDrop = useCallback(
-    (event: React.DragEvent) => {
-      event.preventDefault();
-
-      const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-      if (!reactFlowBounds) return;
-
-      const position = {
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
-      };
-
-      const type = event.dataTransfer.getData('application/reactflow/node');
-      const template = event.dataTransfer.getData('application/reactflow/template');
-      const nodeType = nodeUiConfigs[type];
-
-      const newNode: Node = {
-        id: `${type}-${Date.now()}`,
-        type,
-        position,
-        data: {
-          template: template,
-          title: nodeType?.title,
-          agentRole: 'Dummy agent role',
-          agentGoal: 'Dummy agent goal',
-          settings: {},
-          config: nodeType,
-          toggleEditor: () => toggleNodeEditor(template),
+    const toggleNodeEditor = useCallback(
+        (templateType: string) => {
+            if (selectedEditorTemplate !== templateType) {
+                setSelectedEditorTemplate(templateType);
+            }
+            setShowNodeEditor(show => !show);
         },
-      };
+        [selectedEditorTemplate]
+    );
 
-      setNodes(nds => nds.concat(newNode));
-    },
-    [nodeUiConfigs, setNodes, toggleNodeEditor]
-  );
+    const onDrop = useCallback(
+        (event: React.DragEvent) => {
+            event.preventDefault();
 
-  const onDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }, []);
+            const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+            if (!reactFlowBounds) return;
 
-  const onConnect: OnConnect = useCallback(
-    connection => setEdges(edges => addEdge(connection, edges)),
-    [setEdges]
-  );
+            const position = {
+                x: event.clientX - reactFlowBounds.left,
+                y: event.clientY - reactFlowBounds.top,
+            };
 
-  const onSave = useCallback(() => {
-    const flow = toObject();
-    localStorage.setItem(flowKey, JSON.stringify(flow));
-  }, [toObject]);
+            const type = event.dataTransfer.getData('application/reactflow/node');
+            const template = event.dataTransfer.getData('application/reactflow/template');
+            const nodeType = nodeUiConfigs[type];
 
-  const onRestore = useCallback(() => {
-    const restoreFlow = async () => {
-      const flowString = localStorage.getItem(flowKey);
-      if (!flowString) return;
+            const newNode: Node = {
+                id: `${type}-${Date.now()}`,
+                type,
+                position,
+                data: {
+                    template: template,
+                    title: nodeType?.title,
+                    agentRole: 'Dummy agent role',
+                    agentGoal: 'Dummy agent goal',
+                    settings: {},
+                    config: nodeType,
+                    toggleEditor: () => toggleNodeEditor(template),
+                },
+            };
 
-      const flow = JSON.parse(flowString);
-      if (flow) {
-        const { x = 0, y = 0, zoom = 1 } = flow.viewport || {};
-        setNodes(flow.nodes || []);
-        setEdges(flow.edges || []);
-        setViewport({ x, y, zoom });
-      }
-    };
+            setNodes(nds => nds.concat(newNode));
+        },
+        [nodeUiConfigs, setNodes, toggleNodeEditor]
+    );
 
-    restoreFlow();
-  }, [setNodes, setEdges, setViewport]);
+    const onDragOver = useCallback((event: React.DragEvent) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }, []);
 
-  useEffect(() => {
-    onRestore();
-  }, [onRestore]);
+    const onConnect: OnConnect = useCallback(connection => setEdges(edges => addEdge(connection, edges)), [setEdges]);
 
-  const nodeComponentsParser = Object.entries(nodeUiConfigs).reduce<
-    Record<string, React.FC<NodeComponentProps>>
-  >((componentRecords, [type]) => {
-    const component = nodeComponents[type];
-    if (component) {
-      componentRecords[type] = component.uiComponent;
-    }
-    return componentRecords;
-  }, {});
+    const onSave = useCallback(() => {
+        const flow = toObject();
+        localStorage.setItem(flowKey, JSON.stringify(flow));
+    }, [toObject]);
 
-  return (
-    <div className="h-full flex flex-row" ref={reactFlowWrapper}>
-      <ReactFlow
-        nodes={nodes}
-        nodeTypes={nodeComponentsParser}
-        onNodesChange={onNodesChange}
-        edges={edges}
-        // edgeTypes={edgeTypes}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        defaultEdgeOptions={defaultEdgeOptions}
-        fitView
-      >
-        <Background />
-        <MiniMap />
-        <Controls />
-        <Panel position="top-left">
-          <DnDPanel nodeTypes={nodeUiConfigs} onDragStart={onDragStart} />
-        </Panel>
+    const onRestore = useCallback(() => {
+        const restoreFlow = async () => {
+            const flowString = localStorage.getItem(flowKey);
+            if (!flowString) return;
 
-        {showNodeEditor ? (
-          <NodeEditorPanel templateType={selectedEditorTemplate} />
-        ) : (
-          <ActionButtonPanel onSave={onSave} onRestore={onRestore} />
-        )}
-      </ReactFlow>
-    </div>
-  );
+            const flow = JSON.parse(flowString);
+            if (flow) {
+                const { x = 0, y = 0, zoom = 1 } = flow.viewport || {};
+                setNodes(flow.nodes || []);
+                setEdges(flow.edges || []);
+                setViewport({ x, y, zoom });
+            }
+        };
+
+        restoreFlow();
+    }, [setNodes, setEdges, setViewport]);
+
+    useEffect(() => {
+        onRestore();
+    }, [onRestore]);
+
+    const nodeComponentsParser = Object.entries(nodeUiConfigs).reduce<Record<string, React.FC<NodeComponentProps>>>(
+        (componentRecords, [type]) => {
+            const component = nodeComponents[type];
+            if (component) {
+                componentRecords[type] = component.uiComponent;
+            }
+            return componentRecords;
+        },
+        {}
+    );
+
+    return (
+        <div className="h-full flex flex-row" ref={reactFlowWrapper}>
+            <ReactFlow
+                nodes={nodes}
+                nodeTypes={nodeComponentsParser}
+                onNodesChange={onNodesChange}
+                edges={edges}
+                // edgeTypes={edgeTypes}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+                defaultEdgeOptions={defaultEdgeOptions}
+                fitView
+            >
+                <Background />
+                <MiniMap />
+                <Controls />
+                <Panel position="top-left">
+                    <DnDPanel nodeTypes={nodeUiConfigs} onDragStart={onDragStart} />
+                </Panel>
+
+                {showNodeEditor ? (
+                    <NodeEditorPanel templateType={selectedEditorTemplate} />
+                ) : (
+                    <ActionButtonPanel onSave={onSave} onRestore={onRestore} />
+                )}
+            </ReactFlow>
+        </div>
+    );
 };
 
 export default RootModule;
