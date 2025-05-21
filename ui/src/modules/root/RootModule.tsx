@@ -41,17 +41,19 @@ const RootModule: React.FC = () => {
 
     const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
 
-    const { nodes, getNodes, setNodes } = useFlowStateStore();
-    const { edges, getEdges, setEdges } = useFlowStateStore();
+    const { nodes, setNodes } = useFlowStateStore();
+    console.log('🚀 ~ nodes:', nodes);
+    const { edges, setEdges } = useFlowStateStore();
+    console.log('🚀 ~ edges:', edges);
 
     const onNodesChange: OnNodesChange = useCallback(
-        changes => setNodes(applyNodeChanges(changes, getNodes())),
-        [setNodes, getNodes]
+        changes => setNodes(nodes => applyNodeChanges(changes, nodes)),
+        [setNodes]
     );
 
     const onEdgesChange: OnEdgesChange = useCallback(
-        changes => setEdges(applyEdgeChanges(changes, getEdges())),
-        [setEdges, getEdges]
+        changes => setEdges(edges => applyEdgeChanges(changes, edges)),
+        [setEdges]
     );
 
     const onDragStart = useCallback((event: React.DragEvent, nodeType: string, templateType: string) => {
@@ -87,7 +89,7 @@ const RootModule: React.FC = () => {
             const nodeType = nodeUiConfigs[type];
 
             const newNode: Node = {
-                id: `${type}-${v4()}}`,
+                id: `${type}_${v4()}}`,
                 type,
                 position,
                 data: {
@@ -101,9 +103,9 @@ const RootModule: React.FC = () => {
                 },
             };
 
-            setNodes(getNodes().concat(newNode));
+            setNodes(nodes => nodes.concat(newNode));
         },
-        [nodeUiConfigs, getNodes, setNodes, toggleNodeEditor]
+        [nodeUiConfigs, setNodes, toggleNodeEditor]
     );
 
     const onDragOver = useCallback((event: React.DragEvent) => {
@@ -111,10 +113,7 @@ const RootModule: React.FC = () => {
         event.dataTransfer.dropEffect = 'move';
     }, []);
 
-    const onConnect: OnConnect = useCallback(
-        connection => setEdges(addEdge(connection, getEdges())),
-        [setEdges, getEdges]
-    );
+    const onConnect: OnConnect = useCallback(connection => setEdges(edges => addEdge(connection, edges)), [setEdges]);
 
     const onSave = useCallback(() => {
         const flow = toObject();

@@ -13,11 +13,11 @@ export interface NodeRegistryState {
 export interface FlowState {
     nodes: Node[];
     edges: Edge[];
-    setNodes: (nodes: Node[]) => void;
+    setNodes: (nodes: (currentNodes: Node[]) => Node[]) => void;
     getNodes: () => Node[];
     getNodeById: (id: string) => Node | undefined;
     setNodeById: (id: string, node: Node) => void;
-    setEdges: (edges: Edge[]) => void;
+    setEdges: (edges: (currentEdges: Edge[]) => Edge[]) => void;
     getEdges: () => Edge[];
     getEdgeById: (id: string) => Edge | undefined;
     setEdgeById: (id: string, edge: Edge) => void;

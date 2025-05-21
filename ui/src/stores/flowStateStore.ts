@@ -6,7 +6,7 @@ import { FlowState } from '@/types/stores.types.ts';
 export const useFlowStateStore = create<FlowState>((set, get) => ({
     // nodes
     nodes: [],
-    setNodes: (nodes: Node[]) => set({ nodes }),
+    setNodes: nodes => set(state => ({ ...state, nodes: typeof nodes === 'function' ? nodes(state.nodes) : nodes })),
     getNodes: (): Node[] => get().nodes,
     getNodeById: (id: string): Node | undefined => {
         return get().nodes.find((node: Node) => node.id === id) || undefined;
@@ -18,7 +18,7 @@ export const useFlowStateStore = create<FlowState>((set, get) => ({
     },
     // edges
     edges: [],
-    setEdges: (edges: Edge[]) => set({ edges }),
+    setEdges: edges => set(state => ({ ...state, edges: typeof edges === 'function' ? edges(state.edges) : edges })),
     getEdges: (): Edge[] => get().edges,
     getEdgeById: (id: string): Edge | undefined => {
         return get().edges.find((edge: Edge) => edge.id === id) || undefined;
