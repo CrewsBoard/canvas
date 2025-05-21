@@ -1,5 +1,6 @@
-import {NodeUiConfig} from "@/types/flowNode.types.ts";
-import React from "react";
+import React from 'react';
+
+import { NodeUiConfig } from '@/types/flowNode.types.ts';
 
 export interface SidebarProps {
     nodeUiConfigs: Record<string, NodeUiConfig>;

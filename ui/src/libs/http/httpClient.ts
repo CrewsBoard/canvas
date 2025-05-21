@@ -1,25 +1,20 @@
-import {
-    BASE_URL,
-    HttpClient,
-    HttpError,
-    RequestOptions
-} from "@/types/http.types.ts";
+import { BASE_URL, HttpClient, HttpError, RequestOptions } from '@/types/http.types.ts';
 
 export const httpClient: HttpClient = {
     async get<T>(url: string, options: RequestOptions = {}): Promise<T> {
-        return this.request<T>(url, {...options, method: 'GET'});
+        return this.request<T>(url, { ...options, method: 'GET' });
     },
 
     async post<T>(url: string, body?: BodyInit, options: RequestOptions = {}): Promise<T> {
-        return this.request<T>(url, {...options, method: 'POST', body});
+        return this.request<T>(url, { ...options, method: 'POST', body });
     },
 
     async put<T>(url: string, body?: BodyInit, options: RequestOptions = {}): Promise<T> {
-        return this.request<T>(url, {...options, method: 'PUT', body});
+        return this.request<T>(url, { ...options, method: 'PUT', body });
     },
 
     async delete<T>(url: string, options: RequestOptions = {}): Promise<T> {
-        return this.request<T>(url, {...options, method: 'DELETE'});
+        return this.request<T>(url, { ...options, method: 'DELETE' });
     },
 
     async request<T>(url: string, options: RequestOptions): Promise<T> {

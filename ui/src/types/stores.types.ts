@@ -1,9 +1,32 @@
-import {NodeRegistry, NodeUiConfig} from "@/types/flowNode.types.ts";
+import type { Edge, Node } from '@xyflow/react';
+
+import { NodeRegistry, NodeUiConfig } from '@/types/flowNode.types.ts';
 
 export interface NodeRegistryState {
     nodeUiConfigs: Record<string, NodeUiConfig>;
-    nodeComponents: NodeRegistry,
+    nodeComponents: NodeRegistry;
     loading: boolean;
     error: string | null;
     loadFlowNodeUiBundle: (nodeUiConfigs: NodeUiConfig[]) => Promise<void>;
+}
+
+export interface FlowState {
+    nodes: Node[];
+    edges: Edge[];
+    selectedNode: Node | null;
+    setNodes: (nodes: (currentNodes: Node[]) => Node[]) => void;
+    getNodes: () => Node[];
+    getNodeById: (id: string) => Node | undefined;
+    setNodeById: (id: string, node: Node) => void;
+    setEdges: (edges: (currentEdges: Edge[]) => Edge[]) => void;
+    getEdges: () => Edge[];
+    getEdgeById: (id: string) => Edge | undefined;
+    setEdgeById: (id: string, edge: Edge) => void;
+    setSelectedNode: (node: Node | null) => void;
+}
+
+export interface FlowActionState {
+    showEditor: boolean;
+    setShowEditor: (showEditor: boolean) => void;
+    toggleEditor: () => void;
 }

@@ -1,24 +1,25 @@
-import React, {useEffect} from 'react';
-import {useNodeRegistryStore} from '@/stores/nodeRegistryStore';
-import {BootstrapperProviderProps} from "@/types/providers.types.ts";
-import {useHttpClientQuery} from "@/libs/hooks/useHttpClient.ts";
-import {NodeUiConfig} from "@/types/flowNode.types.ts";
+import React, { useEffect } from 'react';
 
-export const BootstrapperProvider: React.FC<BootstrapperProviderProps> = ({children}) => {
+import { useHttpClientQuery } from '@/libs/hooks/useHttpClient.ts';
+import { useNodeRegistryStore } from '@/stores/nodeRegistryStore';
+import { NodeUiConfig } from '@/types/flowNode.types.ts';
+import { BootstrapperProviderProps } from '@/types/providers.types.ts';
+
+export const BootstrapperProvider: React.FC<BootstrapperProviderProps> = ({ children }) => {
     const {
         loading: flowNodeRegistryLoading,
         error: flowNodeRegistryError,
-        loadFlowNodeUiBundle
+        loadFlowNodeUiBundle,
     } = useNodeRegistryStore();
 
     const {
         data: nodeTypes,
         isLoading,
-        error
+        error,
     } = useHttpClientQuery<NodeUiConfig[]>({
         queryKey: ['node-ui-configs'],
         url: '/node-types',
-        transformResponse: (data) => data as NodeUiConfig[],
+        transformResponse: data => data as NodeUiConfig[],
     });
 
     useEffect(() => {
@@ -32,8 +33,7 @@ export const BootstrapperProvider: React.FC<BootstrapperProviderProps> = ({child
     }
 
     if (error || flowNodeRegistryError) {
-        return <div>Error loading
-            nodes: {error?.message || flowNodeRegistryError}</div>;
+        return <div>Error loading nodes: {error?.message || flowNodeRegistryError}</div>;
     }
 
     return <>{children}</>;

@@ -1,25 +1,21 @@
-import React from "react";
-import {NodeComponentProps} from "@/types/flowNode.types.ts";
+import { Handle, Position } from '@xyflow/react';
+import React from 'react';
 
-const TransformNode: React.FC<NodeComponentProps> = ({
-                                                         data,
-                                                         selected
-                                                     }) => {
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { cn } from '@/libs/utils';
+import { NodeComponentProps } from '@/types/flowNode.types.ts';
+
+const TransformNode: React.FC<NodeComponentProps> = ({ data, selected }) => {
     return (
-        <div className={`node ${selected ? 'selected' : ''}`}
-             style={{borderColor: '#2196F3'}}>
-            <div className="node-header">
-                <h3>{data.title}</h3>
-            </div>
-            <div className="node-content">
+        <Card className={cn('min-w-[200px] p-4 text-center', selected ? 'bg-gray-200' : '')}>
+            <CardHeader>{data.title}</CardHeader>
+            <CardContent>
                 <p>Transformations: {data?.transformations ? 'Configured' : 'Not set'}</p>
-            </div>
-            <div className="node-ports">
-                <div className="input-port" data-handleid="success"/>
-                <div className="output-port" data-handleid="success"/>
-                <div className="output-port" data-handleid="failure"/>
-            </div>
-        </div>
+            </CardContent>
+
+            <Handle type="target" position={Position.Top} className="w-2 h-2 !bg-muted-foreground" />
+            <Handle type="source" position={Position.Bottom} className="w-2 h-2 !bg-muted-foreground" />
+        </Card>
     );
 };
 
