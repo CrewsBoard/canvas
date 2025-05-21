@@ -28,4 +28,7 @@ export const useFlowStateStore = create<FlowState>((set, get) => ({
             edges: state.edges.map((n: Edge) => (n.id === id ? edge : n)),
         }));
     },
+    // selected node
+    selectedNode: null,
+    setSelectedNode: node => set({ selectedNode: node }),
 }));

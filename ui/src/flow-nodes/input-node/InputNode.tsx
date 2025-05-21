@@ -4,16 +4,29 @@ import React from 'react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { cn } from '@/libs/utils';
+import { useFlowActionStore } from '@/stores/flowActionStore';
+import { useFlowStateStore } from '@/stores/flowStateStore';
 import { NodeComponentProps } from '@/types/flowNode.types.ts';
 
-const InputNode: React.FC<NodeComponentProps> = ({ data, selected }) => {
+const InputNode: React.FC<NodeComponentProps> = ({ id, data, selected }) => {
+    const { selectedNode, setSelectedNode, getNodeById } = useFlowStateStore();
+    const { toggleEditor } = useFlowActionStore();
+
+    const handleDoubleClick = () => {
+        const node = getNodeById(id);
+        if (node) {
+            if (selectedNode?.id !== id) setSelectedNode(node);
+            toggleEditor();
+        }
+    };
+
     return (
         <Card
             className={cn(
                 'min-w-[200px] p-0 text-center gap-0',
                 selected ? 'border-2 border-primary border-dashed' : ''
             )}
-            onDoubleClick={data?.toggleEditor}
+            onDoubleClick={handleDoubleClick}
         >
             <CardHeader className="p-4 rounded-tl-lg rounded-tr-lg bg-green-600 text-white">
                 <div className="flex flex-row justify-between items-start text-shadow-stone-200">

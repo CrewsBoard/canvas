@@ -13,6 +13,7 @@ export interface NodeRegistryState {
 export interface FlowState {
     nodes: Node[];
     edges: Edge[];
+    selectedNode: Node | null;
     setNodes: (nodes: (currentNodes: Node[]) => Node[]) => void;
     getNodes: () => Node[];
     getNodeById: (id: string) => Node | undefined;
@@ -21,4 +22,11 @@ export interface FlowState {
     getEdges: () => Edge[];
     getEdgeById: (id: string) => Edge | undefined;
     setEdgeById: (id: string, edge: Edge) => void;
+    setSelectedNode: (node: Node | null) => void;
+}
+
+export interface FlowActionState {
+    showEditor: boolean;
+    setShowEditor: (showEditor: boolean) => void;
+    toggleEditor: () => void;
 }

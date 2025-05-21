@@ -15,11 +15,12 @@ import {
     useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { v4 } from 'uuid';
 
 import DnDPanel from '@/modules/root/dndPanel';
 import { ActionButtonPanel, NodeEditorPanel } from '@/modules/root/panels';
+import { useFlowActionStore } from '@/stores/flowActionStore';
 import { useFlowStateStore } from '@/stores/flowStateStore';
 import { useNodeRegistryStore } from '@/stores/nodeRegistryStore';
 import { NodeComponentProps } from '@/types/flowNode.types.ts';
@@ -33,18 +34,15 @@ const defaultEdgeOptions = {
 const flowKey = 'crews-flow';
 
 const RootModule: React.FC = () => {
-    const [showNodeEditor, setShowNodeEditor] = useState(false);
-    const [selectedEditorTemplate, setSelectedEditorTemplate] = useState<string>('');
-
     const { setViewport, toObject } = useReactFlow();
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
     const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
 
     const { nodes, setNodes } = useFlowStateStore();
-    console.log('🚀 ~ nodes:', nodes);
     const { edges, setEdges } = useFlowStateStore();
-    console.log('🚀 ~ edges:', edges);
+    const { selectedNode } = useFlowStateStore();
+    const { showEditor } = useFlowActionStore();
 
     const onNodesChange: OnNodesChange = useCallback(
         changes => setNodes(nodes => applyNodeChanges(changes, nodes)),
@@ -62,16 +60,6 @@ const RootModule: React.FC = () => {
         event.dataTransfer.effectAllowed = 'move';
     }, []);
 
-    const toggleNodeEditor = useCallback(
-        (templateType: string) => {
-            if (selectedEditorTemplate !== templateType) {
-                setSelectedEditorTemplate(templateType);
-            }
-            setShowNodeEditor(show => !show);
-        },
-        [selectedEditorTemplate]
-    );
-
     const onDrop = useCallback(
         (event: React.DragEvent) => {
             event.preventDefault();
@@ -88,8 +76,9 @@ const RootModule: React.FC = () => {
             const template = event.dataTransfer.getData('application/reactflow/template');
             const nodeType = nodeUiConfigs[type];
 
+            const newNodeId = `${type}_${v4()}`;
             const newNode: Node = {
-                id: `${type}_${v4()}}`,
+                id: newNodeId,
                 type,
                 position,
                 data: {
@@ -99,13 +88,12 @@ const RootModule: React.FC = () => {
                     agentGoal: 'Dummy agent goal',
                     settings: {},
                     config: nodeType,
-                    toggleEditor: () => toggleNodeEditor(template),
                 },
             };
 
             setNodes(nodes => nodes.concat(newNode));
         },
-        [nodeUiConfigs, setNodes, toggleNodeEditor]
+        [nodeUiConfigs, setNodes]
     );
 
     const onDragOver = useCallback((event: React.DragEvent) => {
@@ -173,8 +161,8 @@ const RootModule: React.FC = () => {
                     <DnDPanel nodeTypes={nodeUiConfigs} onDragStart={onDragStart} />
                 </Panel>
 
-                {showNodeEditor ? (
-                    <NodeEditorPanel templateType={selectedEditorTemplate} />
+                {showEditor ? (
+                    <NodeEditorPanel templateType={selectedNode?.data?.template as string} />
                 ) : (
                     <ActionButtonPanel onSave={onSave} onRestore={onRestore} />
                 )}

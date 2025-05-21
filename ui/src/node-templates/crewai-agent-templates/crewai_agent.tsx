@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -6,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useFlowStateStore } from '@/stores/flowStateStore';
 
 const formSchema = z.object({
     agentRole: z.string().min(1, 'Agent Role is required'),
@@ -20,26 +22,41 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function CrewAiAgentTemplate() {
+    const { selectedNode, setSelectedNode, setNodeById } = useFlowStateStore();
+
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            agentRole: '',
-            agentGoal: '',
-            agentBackstory: '',
-            agentTools: [],
-            maxIterations: 1,
-            allowDelegation: false,
-            modelId: ['default-model'],
+            agentRole: (selectedNode?.data?.agentRole as string) || '',
+            agentGoal: (selectedNode?.data?.agentGoal as string) || '',
+            agentBackstory: (selectedNode?.data?.agentBackstory as string) || '',
+            agentTools: (selectedNode?.data?.agentTools as string[]) || [],
+            maxIterations: (selectedNode?.data?.maxIterations as number) || 10,
+            allowDelegation: (selectedNode?.data?.allowDelegation as boolean) || false,
+            modelId: (selectedNode?.data?.modelId as string[]) || [],
         },
     });
 
-    function onSubmit(values: FormValues) {
-        console.log('Submitted Values:', values);
-    }
+    useEffect(() => {
+        if (selectedNode) {
+            const subscription = form.watch(values => {
+                const updatedNode = {
+                    ...selectedNode,
+                    data: {
+                        ...selectedNode.data,
+                        ...values,
+                    },
+                };
+                setNodeById(selectedNode.id, updatedNode);
+                setSelectedNode(updatedNode);
+            });
+            return () => subscription.unsubscribe();
+        }
+    }, [form, selectedNode, setNodeById, setSelectedNode]);
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form className="space-y-4">
                 <FormField
                     control={form.control}
                     name="agentRole"
