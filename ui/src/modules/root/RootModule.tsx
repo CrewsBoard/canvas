@@ -1,23 +1,26 @@
 import {
     Background,
     Controls,
-    Edge,
     MarkerType,
     MiniMap,
     Node,
     type OnConnect,
+    OnEdgesChange,
+    OnNodesChange,
     Panel,
     ReactFlow,
     addEdge,
-    useEdgesState,
-    useNodesState,
+    applyEdgeChanges,
+    applyNodeChanges,
     useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { v4 } from 'uuid';
 
 import DnDPanel from '@/modules/root/dndPanel';
 import { ActionButtonPanel, NodeEditorPanel } from '@/modules/root/panels';
+import { useFlowStateStore } from '@/stores/flowStateStore';
 import { useNodeRegistryStore } from '@/stores/nodeRegistryStore';
 import { NodeComponentProps } from '@/types/flowNode.types.ts';
 
@@ -30,15 +33,26 @@ const defaultEdgeOptions = {
 const flowKey = 'crews-flow';
 
 const RootModule: React.FC = () => {
-    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-    const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
-    const { setViewport, toObject } = useReactFlow();
-
     const [showNodeEditor, setShowNodeEditor] = useState(false);
     const [selectedEditorTemplate, setSelectedEditorTemplate] = useState<string>('');
 
+    const { setViewport, toObject } = useReactFlow();
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+    const { nodeUiConfigs, nodeComponents } = useNodeRegistryStore();
+
+    const { nodes, getNodes, setNodes } = useFlowStateStore();
+    const { edges, getEdges, setEdges } = useFlowStateStore();
+
+    const onNodesChange: OnNodesChange = useCallback(
+        changes => setNodes(applyNodeChanges(changes, getNodes())),
+        [setNodes, getNodes]
+    );
+
+    const onEdgesChange: OnEdgesChange = useCallback(
+        changes => setEdges(applyEdgeChanges(changes, getEdges())),
+        [setEdges, getEdges]
+    );
 
     const onDragStart = useCallback((event: React.DragEvent, nodeType: string, templateType: string) => {
         event.dataTransfer.setData('application/reactflow/node', nodeType);
@@ -73,7 +87,7 @@ const RootModule: React.FC = () => {
             const nodeType = nodeUiConfigs[type];
 
             const newNode: Node = {
-                id: `${type}-${Date.now()}`,
+                id: `${type}-${v4()}}`,
                 type,
                 position,
                 data: {
@@ -87,9 +101,9 @@ const RootModule: React.FC = () => {
                 },
             };
 
-            setNodes(nds => nds.concat(newNode));
+            setNodes(getNodes().concat(newNode));
         },
-        [nodeUiConfigs, setNodes, toggleNodeEditor]
+        [nodeUiConfigs, getNodes, setNodes, toggleNodeEditor]
     );
 
     const onDragOver = useCallback((event: React.DragEvent) => {
@@ -97,7 +111,10 @@ const RootModule: React.FC = () => {
         event.dataTransfer.dropEffect = 'move';
     }, []);
 
-    const onConnect: OnConnect = useCallback(connection => setEdges(edges => addEdge(connection, edges)), [setEdges]);
+    const onConnect: OnConnect = useCallback(
+        connection => setEdges(addEdge(connection, getEdges())),
+        [setEdges, getEdges]
+    );
 
     const onSave = useCallback(() => {
         const flow = toObject();
@@ -143,7 +160,6 @@ const RootModule: React.FC = () => {
                 nodeTypes={nodeComponentsParser}
                 onNodesChange={onNodesChange}
                 edges={edges}
-                // edgeTypes={edgeTypes}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onDragOver={onDragOver}
